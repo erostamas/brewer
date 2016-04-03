@@ -15,4 +15,5 @@ endif()
 
 add_executable(brewer
 main.cc
-TcpInterface.cc)
+TcpInterface.cc
+ProcessControl.cc)

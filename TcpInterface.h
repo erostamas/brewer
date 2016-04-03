@@ -3,5 +3,6 @@
 class TcpInterface {
 public:
     bool exit_command = false;
-    void init();
+    void run();
+    void processRequest(std::string, int&);
 };

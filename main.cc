@@ -3,23 +3,25 @@
 #include <cstdlib>
 
 #include "TcpInterface.h"
+#include "ProcessControl.h"
+#include "Common.h"
 
+bool stopControlRequested = false;
+double currentTemperature = 0.0;
+double setpoint = 0.0;
 TcpInterface tcpint;
 
 void startListening() {	
-	tcpint.init();
+	tcpint.run();
 }
 
 int main(void) {
     std::cout << "hello world" << std::endl;
 	
 	std::thread t1(startListening);
-	int i = 0;
-	while(!tcpint.exit_command) {
-		std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-		std::cout << i << std::endl;
-	    i++;
-	}
+	ProcessControl processcontrol;
+    processcontrol.setSimulationMode(true);
+    processcontrol.run();
 	exit(0);
 	
 }

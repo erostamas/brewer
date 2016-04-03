@@ -8,8 +8,9 @@
 #include <iostream>
 
 #include "TcpInterface.h"
+#include "Common.h"
 
-void TcpInterface::init() {
+void TcpInterface::run() {
     int sockfd, newsockfd, portno;
     socklen_t clilen;
     char buffer[256];
@@ -37,17 +38,44 @@ void TcpInterface::init() {
     if (newsockfd < 0) {
          std::cout << "ERROR on accept" << std::endl;
 	}
-	std::cout << "jupppi" << std::endl;
+	std::cout << "Connection established" << std::endl;
+    std::string message;
+	while(message != "stop"){
+    std::cout << "message:" << message << std::endl;
     bzero(buffer,256);
-	while(buffer[0] != 'h'){
     n = read(newsockfd,buffer,255);
-    if (n < 0) std::cout << "ERROR reading from socket" << std::endl;
-    //printf("Here is the message: %s\n",buffer);
-    n = write(newsockfd,buffer,18);
-    if (n < 0) std::cout << "ERROR writing to socket" << std::endl;
+    if (n < 0) {
+        std::cout << "ERROR reading from socket" << std::endl;
+        break;
+    }
+    message = buffer;
+    processRequest(message, newsockfd);
+    n = write(newsockfd,message.c_str(),message.length());
+    if (n < 0) {
+        std::cout << "ERROR writing to socket" << std::endl;
+        break;
+    }
 
 	}
 	close(newsockfd);
     close(sockfd);
 	exit_command = true;
+}
+
+void TcpInterface::processRequest(std::string message, int& newsockfd) {
+    if (message.substr(0, 8) == "setpoint") {
+        // TODO: exception handling
+        setpoint = stod(message.substr(8));
+    } else if (message.substr(0, 15) == "get_temperature"){
+        std::string temp = std::to_string(currentTemperature);
+        write(newsockfd,temp.c_str(),temp.length());
+    }
+    else if (message.substr(0, 12) == "inc_setpoint"){
+        setpoint++;
+    }
+    else if (message.substr(0, 12) == "dec_setpoint"){
+        setpoint--;
+    }
+    
+    
 }
