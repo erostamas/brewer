@@ -43,7 +43,7 @@ void UdpInterface::run() {
         message = buffer;
         if (message.substr(0,21) == "where are you brewer?") {
             std::cout << "jap" << std::endl;
-            int n = sendto(sockfd, inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr), 4, 0, &cli_addr, clilen);
+            int n = sendto(sockfd, inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr), 15, 0, &cli_addr, clilen);
             if (n<0) {  std::cout << "error sending udp packet" << std::endl;}
         }
     }
