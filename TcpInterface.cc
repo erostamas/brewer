@@ -9,6 +9,7 @@
 
 #include "TcpInterface.h"
 #include "Common.h"
+#include "ProcessControl.h"
 
 int TcpInterface::bindToPort(int portno) {
     /*
@@ -104,5 +105,8 @@ void TcpInterface::processRequest(std::string message, int& newsockfd) {
     }
     else if (message.substr(0, 12) == "dec_setpoint"){
         setpoint--;
+    }
+    else if (message.substr(0, 9) == "playcurve"){
+        processcontrol.playCurve(message.substr(10, message.length()));
     }
 }

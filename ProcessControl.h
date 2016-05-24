@@ -1,11 +1,26 @@
+#pragma once
 
+#include "CurveStore.h"
 
-class ProcessControl{
+enum class MODE {
+    MANUAL,
+    AUTO
+};
+
+class ProcessControl {
 public:
+    ProcessControl();
 	void setSimulationMode(bool simulationMode)           { _simulationMode = simulationMode;         }
 	
+    void initCurves();
 	void run();
-private:
+    void playCurve(std::string name);
+    void stopCurve();
 
-    bool _simulationMode;	
+private:
+    bool _simulationMode;
+    MODE _mode;
+    CurveStore _curveStore;
+    std::string _currentCurve;
+    unsigned int _currentSegmentIndex;
 };

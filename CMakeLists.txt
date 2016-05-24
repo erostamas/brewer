@@ -14,7 +14,8 @@ if ((NOT CMAKE_CXX_FLAGS) OR (CMAKE_CXX_FLAGS MATCHES "^[ \t]*$"))
 endif()
 
 add_executable(brewer
-main.cc
 TcpInterface.cc
 UdpInterface.cc
-ProcessControl.cc)
+ProcessControl.cc
+CurveStore.cc
+main.cc)

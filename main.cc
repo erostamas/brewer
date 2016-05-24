@@ -10,8 +10,14 @@
 bool stopControlRequested = false;
 double currentTemperature = 0.0;
 double setpoint = 0.0;
+ProcessControl processcontrol;
+
 TcpInterface tcpint;
 UdpInterface udpint;
+
+void playCurve(std::string name) {
+    processcontrol.playCurve(name);
+}
 
 void startTCPListening() {	
 	tcpint.run();
@@ -26,7 +32,6 @@ int main(void) {
 	
 	std::thread t1(startTCPListening);
     std::thread t2(startUDPDiscoveryService);
-	ProcessControl processcontrol;
     processcontrol.setSimulationMode(true);
     processcontrol.run();
 	exit(0);
