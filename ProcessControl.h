@@ -7,5 +7,5 @@ public:
 	void run();
 private:
 
-    bool _simulationMode = false;	
+    bool _simulationMode;	
 };

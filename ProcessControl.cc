@@ -1,3 +1,5 @@
+#define _GLIBCXX_USE_NANOSLEEP
+
 #include <thread>
 #include <iostream>
 
@@ -10,12 +12,15 @@ void ProcessControl::run() {
         if (_simulationMode) {
             std::this_thread::sleep_for(std::chrono::milliseconds(1000));
             currentTemperature = simval;
-            if (simval < 99) {
+/*             if (simval < 99) {
                 simval++;
             } else {
                 simval = 0.0;
-            }
-            std::cout << currentTemperature << " " << setpoint << std::endl;
+            } */
+            simval = simval + (setpoint - currentTemperature) * 0.1;
+            std::system("clear");
+            std::cout << "Current temperature: " << currentTemperature << "\n"
+                      << "Setpoint:            " << setpoint << std::endl;
             
         }
     }
