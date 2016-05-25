@@ -13,7 +13,7 @@ ProcessControl::ProcessControl() {
 }
 void ProcessControl::run() {
     double simval = 0.0;
-    //long start_time = -1;
+    long start_time = -1;
     initCurves();
 
     while (!stopControlRequested) {
@@ -22,7 +22,7 @@ void ProcessControl::run() {
             currentTemperature = simval;
             simval = simval + (setpoint - currentTemperature) * 0.1;
         }
-        /* if (_mode == MODE::AUTO) {
+        if (_mode == MODE::AUTO) {
             if ((start_time > 0) && ((std::time(0) - start_time) >= _curveStore.getCurve(_currentCurve)[_currentSegmentIndex].getDuration())) {
                     if (_currentSegmentIndex == _curveStore.getCurve(_currentCurve).size() - 1) {
                         stopCurve();
@@ -35,9 +35,9 @@ void ProcessControl::run() {
                     start_time = std::time(0);
                 }
             }
-        } */
+        }
         
-        /* //std::system("clear");
+        std::system("clear");
         std::cout << "Current time in seconds: " << std::time(0) << "\n";
                   if (_mode == MODE::AUTO) {
                       std::cout << "Number of segments:      " << _curveStore.getCurve(_currentCurve).size() << "\n"
@@ -57,7 +57,7 @@ void ProcessControl::run() {
                       case MODE::MANUAL: std::cout << "MANUAL"; break;
                       case MODE::AUTO: std::cout << "AUTO"; break;
                   };
-        std::cout << std::endl; */
+        std::cout << std::endl;
     }
 }
 
