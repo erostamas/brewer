@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CurveStore.h"
+#include "TcpInterface.h"
 
 enum class MODE {
     MANUAL,
@@ -9,13 +10,16 @@ enum class MODE {
 
 class ProcessControl {
 public:
-    ProcessControl();
+    ProcessControl(TcpInterface*);
 	void setSimulationMode(bool simulationMode)           { _simulationMode = simulationMode;         }
 	
     void initCurves();
 	void run();
     void playCurve(std::string name);
     void stopCurve();
+    void processCommands();
+    void processCommand(std::string message);
+    void writeXML();
 
 private:
     bool _simulationMode;
@@ -23,4 +27,7 @@ private:
     CurveStore _curveStore;
     std::string _currentCurve;
     unsigned int _currentSegmentIndex;
+    TcpInterface* _tcpInterface;
+    double _currentTemperature;
+    double _setpoint;
 };

@@ -62,51 +62,43 @@ int TcpInterface::acceptConnection(int sockfd) {
 }
 
 void TcpInterface::run() {
-    int sockfd, newsockfd, n;
+    int sockfd, n;
     int noread = -1;
     char buffer[256];
     std::string incoming_message;
 
     sockfd = bindToPort(5000);
-
+    //_connected = false;
 	while(incoming_message != "stop") {
         if(noread > 1000 || noread==-1) {
+            //_connected = false;
             noread = 0;
-            newsockfd = acceptConnection(sockfd);
+            _connectedSocketFd = acceptConnection(sockfd);
+            //_connected = true;
         }
         if(incoming_message.size() <= 0) { noread++; }
         bzero(buffer,256);
-        n = read(newsockfd,buffer,255);
+        n = read(_connectedSocketFd,buffer,255);
         if (n < 0) {
             std::cout << "TCP ERROR reading from socket, closing socket" << std::endl;
             break;
         }
         incoming_message = buffer;
-        processRequest(incoming_message, newsockfd);
+        _messageQueue.push_back(incoming_message);
 	}
-	close(newsockfd);
+	close(_connectedSocketFd);
     close(sockfd);
 	_exitCommand = true;
 }
 
-void TcpInterface::processRequest(std::string message, int& newsockfd) {
-    if (message.substr(0, 8) == "setpoint") {
-        // TODO: exception handling
-        setpoint = stod(message.substr(8));
-    } else if (message.substr(0, 15) == "get_temperature"){
-        std::string temp = "temp: " + std::to_string(static_cast<long long>(currentTemperature)) + "\n";
-        write(newsockfd,(temp).c_str(),temp.length());
-    } else if (message.substr(0, 12) == "get_setpoint"){
-        std::string setpoint_str = "sp: " + std::to_string(static_cast<long long>(setpoint)) + "\n";
-        write(newsockfd,(setpoint_str).c_str(),setpoint_str.length());
-    }
-    else if (message.substr(0, 12) == "inc_setpoint"){
-        setpoint++;
-    }
-    else if (message.substr(0, 12) == "dec_setpoint"){
-        setpoint--;
-    }
-    else if (message.substr(0, 9) == "playcurve"){
-        processcontrol.playCurve(message.substr(10, message.length()));
+std::vector<std::string> TcpInterface::getMessages() {
+    std::vector<std::string> temp_message_queue = _messageQueue;
+    _messageQueue.clear();
+    return temp_message_queue;
+}
+
+void TcpInterface::sendMessage(std::string message) {
+    if(/*_connected*/ true) {
+        write(_connectedSocketFd,(message).c_str(),message.length());
     }
 }
