@@ -24,8 +24,9 @@ void ProcessControl::run() {
     double simval = 0.0;
     long start_time = -1;
     initCurves();
+    std::cout << "1" << std::endl;
     _curveStore.saveCurves();
-
+    std::cout << "2" << std::endl;
     while (!stopControlRequested) {
         processCommands();
         if (_simulationMode) {
