@@ -11,6 +11,7 @@ enum class MODE {
 class ProcessControl {
 public:
     ProcessControl(TcpInterface*);
+    ~ProcessControl();
 	void setSimulationMode(bool simulationMode)           { _simulationMode = simulationMode;         }
 	
     void initCurves();
@@ -20,6 +21,7 @@ public:
     void processCommands();
     void processCommand(std::string message);
     void writeXML();
+    void printState();
 
 private:
     bool _simulationMode;
@@ -30,4 +32,6 @@ private:
     TcpInterface* _tcpInterface;
     double _currentTemperature;
     double _setpoint;
+    Segment* _currentSegment;
+    unsigned long _timeToNextSegment;
 };

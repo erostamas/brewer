@@ -7,6 +7,7 @@
 
 #include "ProcessControl.h"
 #include "Common.h"
+#include "Utils.h"
 
 ProcessControl::ProcessControl(TcpInterface* tcpInterface) : _tcpInterface(tcpInterface) {
     _mode = MODE::MANUAL;
@@ -14,10 +15,16 @@ ProcessControl::ProcessControl(TcpInterface* tcpInterface) : _tcpInterface(tcpIn
     _currentTemperature = 0.0;
     _setpoint = 0.0;
 }
+
+ProcessControl::~ProcessControl() {
+    
+}
+
 void ProcessControl::run() {
     double simval = 0.0;
     long start_time = -1;
     initCurves();
+    _curveStore.saveCurves();
 
     while (!stopControlRequested) {
         processCommands();
@@ -27,11 +34,12 @@ void ProcessControl::run() {
             simval = simval + (_setpoint - _currentTemperature) * 0.1;
         }
         if (_mode == MODE::AUTO) {
-            if ((start_time > 0) && ((std::time(0) - start_time) >= _curveStore.getCurve(_currentCurve)[_currentSegmentIndex].getDuration())) {
+            if ((start_time > 0) && ((std::time(0) - start_time) >= _currentSegment->getDuration())) {
                     if (_currentSegmentIndex == _curveStore.getCurve(_currentCurve).size() - 1) {
                         stopCurve();
                     } else {
-                        _setpoint = _curveStore.getCurve(_currentCurve)[++_currentSegmentIndex].getSetpoint();
+                        _currentSegment = _curveStore.getCurve(_currentCurve)[++_currentSegmentIndex];
+                        _setpoint = _currentSegment->getSetpoint();
                     }
                     start_time = -1;
             } else if (start_time < 0) {
@@ -40,47 +48,41 @@ void ProcessControl::run() {
                 }
             }
         }
-        
-        std::system("clear");
-        std::cout << "Current time in seconds: " << std::time(0) << "\n";
-                  if (_mode == MODE::AUTO) {
-                      std::cout << "Number of segments:      " << _curveStore.getCurve(_currentCurve).size() << "\n"
-                                << "Current segment index:   " << _currentSegmentIndex << "\n"
-                                << "Time to next segment:    ";
-                                if (start_time > 0) {
-                                    std::cout << _curveStore.getCurve(_currentCurve)[_currentSegmentIndex].getDuration() - (std::time(0) - start_time) << "\n";
-                                } else {
-                                    std::cout << _curveStore.getCurve(_currentCurve)[_currentSegmentIndex].getDuration() << "\n";
-                                }
-                  }
-        std::cout << "Current temperature:     " << _currentTemperature << "\n"
-                  << "Setpoint:                " << _setpoint << "\n"
-                  << "Delta                    " << _setpoint - _currentTemperature << "\n"
-                  << "Current Mode:            ";
-                  switch(_mode) {
-                      case MODE::MANUAL: std::cout << "MANUAL"; break;
-                      case MODE::AUTO: std::cout << "AUTO"; break;
-                  };
-        std::cout << std::endl;
-        
+        if (start_time > 0) {
+            _timeToNextSegment = _currentSegment->getDuration() - (std::time(0) - start_time);
+        } else {
+            _timeToNextSegment = _currentSegment->getDuration();
+        }
+        printState();
         writeXML();
     }
 }
 
 void ProcessControl::initCurves() {
-    Segment first(30,10);
-    Segment second(40,10);
-    Curve curve;
-    curve.push_back(first);
-    curve.push_back(second);
-    _curveStore.addCurve("x", curve);
-    //playCurve("x");
+    if (!Utils::fileExists("/brewer_files/brewer_curves.txt")) {
+        return;
+    } else {
+        std::ifstream curvefile("/brewer_files/brewer_curves.txt");
+        std::string line;
+        while (std::getline(curvefile, line))
+        {
+            const std::vector<std::string> v = Utils::split(line, ' ');
+            if (v.size() != 2) {
+                std::cout << "Error in curve definition" << std::endl;
+            } else {
+                if(_curveStore.addCurve(v[0], v[1])) {
+                    std::cout << "Initialized curve: " << v[0] << std::endl;
+                }
+            }
+        }
+    }
 }
 
 void ProcessControl::playCurve(std::string name) {
     _currentCurve = name;
     _mode = MODE::AUTO;
-    _setpoint = _curveStore.getCurve(_currentCurve)[0].getSetpoint();
+    _currentSegment = _curveStore.getCurve(_currentCurve)[0];
+    _setpoint = _currentSegment->getSetpoint();
 }
 
 void ProcessControl::stopCurve() {
@@ -124,6 +126,36 @@ void ProcessControl::writeXML() {
     myfile << "<?xml version=\"1.0\"?>";
     myfile << "<processdata>\n";
     myfile << "<temp>" << _currentTemperature << "</temp>\n";
+    myfile << "<setpoint>" << _setpoint << "</setpoint>\n";
+    myfile << "<delta>" << _setpoint - _currentTemperature << "</delta>\n";
+    myfile << "<mode>";
+    switch(_mode) {
+                      case MODE::MANUAL: myfile << "MANUAL"; break;
+                      case MODE::AUTO: myfile << "AUTO"; break;
+                  };
+    myfile << "</mode>\n";
+    myfile << "<timetonextsegment>" << _timeToNextSegment << "</timetonextsegment>\n";
     myfile << "</processdata>\n";
     myfile.close();
 }
+
+void ProcessControl::printState() {
+    std::system("clear");
+    std::cout << "Current time in seconds: " << std::time(0) << "\n";
+              if (_mode == MODE::AUTO) {
+                  std::cout << "Number of segments:      " << _curveStore.getCurve(_currentCurve).size() << "\n"
+                            << "Current segment index:   " << _currentSegmentIndex << "\n"
+                            << "Time to next segment:    " << _timeToNextSegment << "\n";
+              }
+    std::cout << "Current temperature:     " << _currentTemperature << "\n"
+              << "Setpoint:                " << _setpoint << "\n"
+              << "Delta                    " << _setpoint - _currentTemperature << "\n"
+              << "Current Mode:            ";
+              switch(_mode) {
+                  case MODE::MANUAL: std::cout << "MANUAL"; break;
+                  case MODE::AUTO: std::cout << "AUTO"; break;
+              };
+    std::cout << std::endl;
+}
+
+
