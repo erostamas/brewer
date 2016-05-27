@@ -4,6 +4,7 @@
 #include <iostream>
 #include <tgmath.h>
 #include <fstream>
+#include <iomanip>
 
 #include "ProcessControl.h"
 #include "Common.h"
@@ -21,12 +22,10 @@ ProcessControl::~ProcessControl() {
 }
 
 void ProcessControl::run() {
-    double simval = 0.0;
-    long start_time = -1;
-    initCurves();
-    std::cout << "1" << std::endl;
+    float simval = 0.0;
+    _segmentStartTime = -1;
+    _curveStore.initCurves();
     _curveStore.saveCurves();
-    std::cout << "2" << std::endl;
     while (!stopControlRequested) {
         processCommands();
         if (_simulationMode) {
@@ -34,61 +33,56 @@ void ProcessControl::run() {
             _currentTemperature = simval;
             simval = simval + (_setpoint - _currentTemperature) * 0.1;
         }
+        
         if (_mode == MODE::AUTO) {
-            if ((start_time > 0) && ((std::time(0) - start_time) >= _currentSegment->getDuration())) {
+            std::cout << "current segment duration: " << _currentSegment->getDuration() << std::endl;
+            if ((_segmentStartTime > 0) && ((std::time(0) - _segmentStartTime) >= _currentSegment->getDuration())) {
                     if (_currentSegmentIndex == _curveStore.getCurve(_currentCurve).size() - 1) {
+                        _segmentStartTime = -1;
                         stopCurve();
                     } else {
                         _currentSegment = _curveStore.getCurve(_currentCurve)[++_currentSegmentIndex];
                         _setpoint = _currentSegment->getSetpoint();
+                        _segmentStartTime = -1;
                     }
-                    start_time = -1;
-            } else if (start_time < 0) {
+            } else if (_segmentStartTime < 0) {
                 if (fabs(_setpoint - _currentTemperature) < 0.5) {
-                    start_time = std::time(0);
+                    _segmentStartTime = std::time(0);
                 }
             }
+            if (_segmentStartTime > 0) {
+                _timeToNextSegment = _currentSegment->getDuration() - (std::time(0) - _segmentStartTime);
+            } else {
+                _timeToNextSegment = _currentSegment->getDuration();
+            }
         }
-        if (start_time > 0) {
-            _timeToNextSegment = _currentSegment->getDuration() - (std::time(0) - start_time);
-        } else {
-            _timeToNextSegment = _currentSegment->getDuration();
+        if (_recording) {
+            _recordedTemperature.push_back(_currentTemperature);
+            _recordedSetpoint.push_back(_setpoint);
         }
         printState();
         writeXML();
     }
 }
 
-void ProcessControl::initCurves() {
-    if (!Utils::fileExists("/brewer_files/brewer_curves.txt")) {
-        return;
-    } else {
-        std::ifstream curvefile("/brewer_files/brewer_curves.txt");
-        std::string line;
-        while (std::getline(curvefile, line))
-        {
-            const std::vector<std::string> v = Utils::split(line, ' ');
-            if (v.size() != 2) {
-                std::cout << "Error in curve definition" << std::endl;
-            } else {
-                if(_curveStore.addCurve(v[0], v[1])) {
-                    std::cout << "Initialized curve: " << v[0] << std::endl;
-                }
-            }
-        }
-    }
-}
-
 void ProcessControl::playCurve(std::string name) {
-    _currentCurve = name;
-    _mode = MODE::AUTO;
-    _currentSegment = _curveStore.getCurve(_currentCurve)[0];
-    _setpoint = _currentSegment->getSetpoint();
+    Curve curve = _curveStore.getCurve(name);
+    if (curve.size()) {
+        _currentCurve = name;
+        _currentSegment = curve[0];
+        _setpoint = _currentSegment->getSetpoint();
+        std::cout << "setpoint set to: " << _setpoint << std::endl;
+        _mode = MODE::AUTO;
+        startRecording();
+    }
 }
 
 void ProcessControl::stopCurve() {
     _mode = MODE::MANUAL;
     _setpoint = 0;
+    _currentSegmentIndex = 0;
+    _segmentStartTime = -1;
+    stopRecording();
 }
 
 void ProcessControl::processCommands() {
@@ -122,22 +116,22 @@ void ProcessControl::processCommand(std::string message) {
 }
 
 void ProcessControl::writeXML() {
-    std::ofstream myfile;
-    myfile.open ("/var/www/html/data.xml");
-    myfile << "<?xml version=\"1.0\"?>";
-    myfile << "<processdata>\n";
-    myfile << "<temp>" << _currentTemperature << "</temp>\n";
-    myfile << "<setpoint>" << _setpoint << "</setpoint>\n";
-    myfile << "<delta>" << _setpoint - _currentTemperature << "</delta>\n";
-    myfile << "<mode>";
+    std::ofstream dataxmlfile;
+    dataxmlfile.open ("/var/www/html/data.xml");
+    dataxmlfile << "<?xml version=\"1.0\"?>";
+    dataxmlfile << "<processdata>\n";
+    dataxmlfile << "<temp>" << std::setprecision(2) << _currentTemperature << "</temp>\n";
+    dataxmlfile << "<setpoint>" << std::setprecision(2) << _setpoint << "</setpoint>\n";
+    dataxmlfile << "<delta>" << std::setprecision(2) << _setpoint - _currentTemperature << "</delta>\n";
+    dataxmlfile << "<mode>";
     switch(_mode) {
-                      case MODE::MANUAL: myfile << "MANUAL"; break;
-                      case MODE::AUTO: myfile << "AUTO"; break;
+                      case MODE::MANUAL: dataxmlfile << "MANUAL"; break;
+                      case MODE::AUTO: dataxmlfile << "AUTO"; break;
                   };
-    myfile << "</mode>\n";
-    myfile << "<timetonextsegment>" << _timeToNextSegment << "</timetonextsegment>\n";
-    myfile << "</processdata>\n";
-    myfile.close();
+    dataxmlfile << "</mode>\n";
+    dataxmlfile << "<timetonextsegment>" << _timeToNextSegment << "</timetonextsegment>\n";
+    dataxmlfile << "</processdata>\n";
+    dataxmlfile.close();
 }
 
 void ProcessControl::printState() {
@@ -157,6 +151,34 @@ void ProcessControl::printState() {
                   case MODE::AUTO: std::cout << "AUTO"; break;
               };
     std::cout << std::endl;
+}
+
+void ProcessControl::startRecording() {
+    _recordingStartTime = std::time(0);
+    _recording = true;
+}
+
+void ProcessControl::stopRecording() {
+    _recording = false;
+    std::ofstream historyfile;
+    historyfile.open ("/brewer_files/history/" + _currentCurve + "_" + std::to_string(_recordingStartTime) + ".txt");
+    for (unsigned i = 0; i < _recordedTemperature.size(); i++) {
+        if (i) {
+            historyfile << ";" << std::setprecision(2) << _recordedTemperature[i];
+        } else {
+            historyfile << std::setprecision(2) << _recordedTemperature[i];
+        }
+    }
+    historyfile << "\n";
+    for (unsigned i = 0; i < _recordedSetpoint.size(); i++) {
+        if (i) {
+            historyfile << ";" << std::setprecision(2) << _recordedSetpoint[i];
+        } else {
+            historyfile << std::setprecision(2) << _recordedSetpoint[i];
+        }
+    }
+    _recordedTemperature.clear();
+    _recordedSetpoint.clear();
 }
 
 

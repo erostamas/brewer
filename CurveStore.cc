@@ -27,6 +27,7 @@ bool CurveStore::addCurve(std::string name, std::string curve_str) {
             unsigned long duration = 0;
             try {
                 setpoint = std::stod(values[0]);
+                std::cout << "init segment setpoint: " << setpoint << std::endl;
             } catch (...) {
                 std::cout << "Exception during segment parsing" << std::endl;
                 return false;
@@ -34,12 +35,14 @@ bool CurveStore::addCurve(std::string name, std::string curve_str) {
             if (values.size() == 2) {
                 try {
                     duration = std::stoul(values[1]);
+                    std::cout << "init segment duration: " << duration << std::endl;
                 } catch (...) {
                     std::cout << "Exception during segment parsing" << std::endl;
                     return false;
                 }
             }
-            Segment* new_segment = new Segment(setpoint, duration);
+            auto new_segment = std::make_shared<Segment>(setpoint, duration);
+            std::cout << "creted segment: " << setpoint << " " << duration << std::endl;
             curve.push_back(new_segment);
         }
     }
@@ -73,7 +76,27 @@ void CurveStore::saveCurves() {
             }
             curve_file << segment->toString();
             first_done = true;
-            delete segment;
+        }
+        curve_file << "\n";
+    }
+}
+
+void CurveStore::initCurves() {
+    if (!Utils::fileExists("/brewer_files/brewer_curves.txt")) {
+        return;
+    } else {
+        std::ifstream curvefile("/brewer_files/brewer_curves.txt");
+        std::string line;
+        while (std::getline(curvefile, line))
+        {
+            const std::vector<std::string> v = Utils::split(line, ' ');
+            if (v.size() != 2) {
+                std::cout << "Error in curve definition" << std::endl;
+            } else {
+                if(addCurve(v[0], v[1])) {
+                    std::cout << "Initialized curve: " << v[0] << std::endl;
+                }
+            }
         }
     }
 }
