@@ -6,6 +6,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <iostream>
+#include <ctime>
 
 #include "TcpInterface.h"
 #include "Common.h"
@@ -42,9 +43,12 @@ int TcpInterface::bindToPort(int portno) {
     if (bind(sockfd, (struct sockaddr *) &server_address, sizeof(server_address)) < 0) {
              std::cout << "TCP ERROR binding to port: " << portno << std::endl;
     }
+    return sockfd;
+}
+
+void TcpInterface::listenForConnection(int sockfd, int portno) {
     listen(sockfd,5);
     std::cout << "TCP Server listening on port: " << portno << std::endl;
-    return sockfd;
 }
 
 int TcpInterface::acceptConnection(int sockfd) {
@@ -62,29 +66,37 @@ int TcpInterface::acceptConnection(int sockfd) {
 }
 
 void TcpInterface::run() {
-    int sockfd, n;
-    int noread = -1;
+    int sockfd = -1, n;
     char buffer[256];
     std::string incoming_message;
-
-    sockfd = bindToPort(5000);
-    //_connected = false;
+    long last_recieved_time = 0;
+    int portno = 5000;
+    
+    sockfd = bindToPort(portno);
 	while(incoming_message != "stop") {
-        if(noread > 1000 || noread==-1) {
+        if((last_recieved_time == 0) || ((std::time(0) - last_recieved_time) > 3)) {
             //_connected = false;
-            noread = 0;
+            if(_connectedSocketFd > 0) { close(_connectedSocketFd); }
+            _connected = false;
+            listenForConnection(sockfd, portno);
             _connectedSocketFd = acceptConnection(sockfd);
-            //_connected = true;
+            _connected = true;
+            last_recieved_time = std::time(0);
+            incoming_message = "";
         }
-        if(incoming_message.size() <= 0) { noread++; }
+        if(incoming_message.size() > 0) {
+            last_recieved_time = std::time(0);
+        }
         bzero(buffer,256);
         n = read(_connectedSocketFd,buffer,255);
         if (n < 0) {
             std::cout << "TCP ERROR reading from socket, closing socket" << std::endl;
-            break;
+            //break;
         }
         incoming_message = buffer;
-        _messageQueue.push_back(incoming_message);
+        if (incoming_message.size() > 0) {
+            _messageQueue.push_back(incoming_message);
+        }
 	}
 	close(_connectedSocketFd);
     close(sockfd);

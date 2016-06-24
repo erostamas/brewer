@@ -15,7 +15,6 @@ endif()
 
 add_executable(brewer
 TcpInterface.cc
-UdpInterface.cc
 ProcessControl.cc
 CurveStore.cc
 main.cc)

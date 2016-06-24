@@ -10,6 +10,9 @@
 #include "Common.h"
 #include "Utils.h"
 
+#define PROPORTIONAL 1
+#define SIM_COOLING 0.1
+
 ProcessControl::ProcessControl(TcpInterface* tcpInterface) : _tcpInterface(tcpInterface) {
     _mode = MODE::MANUAL;
     _currentSegmentIndex = 0;
@@ -31,7 +34,7 @@ void ProcessControl::run() {
         if (_simulationMode) {
             std::this_thread::sleep_for(std::chrono::milliseconds(1000));
             _currentTemperature = simval;
-            simval = simval + (_setpoint - _currentTemperature) * 0.1;
+            simval = simval + _outputPercent * 0.1 - SIM_COOLING;
         }
         
         if (_mode == MODE::AUTO) {
@@ -60,6 +63,7 @@ void ProcessControl::run() {
             _recordedTemperature.push_back(_currentTemperature);
             _recordedSetpoint.push_back(_setpoint);
         }
+        calculatePIDOutput();
         printState();
         writeXML();
     }
@@ -136,16 +140,23 @@ void ProcessControl::writeXML() {
 
 void ProcessControl::printState() {
     std::system("clear");
+    std::cout << "Connection state: \n";
+              /* if (_tcpInterface->_connected) {
+                  std::cout << "Connected" << "\n";
+              } else {
+                  std::cout << "Disconnected" << "\n";
+              } */
     std::cout << "Current time in seconds: " << std::time(0) << "\n";
               if (_mode == MODE::AUTO) {
                   std::cout << "Number of segments:      " << _curveStore.getCurve(_currentCurve).size() << "\n"
                             << "Current segment index:   " << _currentSegmentIndex << "\n"
                             << "Time to next segment:    " << _timeToNextSegment << "\n";
               }
-    std::cout << "Current temperature:     " << _currentTemperature << "\n"
-              << "Setpoint:                " << _setpoint << "\n"
-              << "Delta                    " << _setpoint - _currentTemperature << "\n"
-              << "Current Mode:            ";
+    std::cout << "Current temperature:        " << _currentTemperature << "\n"
+              << "Current ouput percentage:   " << _outputPercent << "\n"
+              << "Setpoint:                   " << _setpoint << "\n"
+              << "Delta                       " << _setpoint - _currentTemperature << "\n"
+              << "Current Mode:               ";
               switch(_mode) {
                   case MODE::MANUAL: std::cout << "MANUAL"; break;
                   case MODE::AUTO: std::cout << "AUTO"; break;
@@ -181,4 +192,11 @@ void ProcessControl::stopRecording() {
     _recordedSetpoint.clear();
 }
 
+void ProcessControl::calculatePIDOutput() {
+    if (_setpoint < 20) {
+        _outputPercent = 0;
+    } else {
+        _outputPercent = PROPORTIONAL * (_setpoint - _currentTemperature) / _setpoint * 100;
+    }
+}
 

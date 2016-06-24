@@ -23,6 +23,7 @@ public:
     void printState();
     void startRecording();
     void stopRecording();
+    void calculatePIDOutput();
 
 private:
     bool _simulationMode;
@@ -31,8 +32,8 @@ private:
     std::string _currentCurve;
     unsigned int _currentSegmentIndex;
     TcpInterface* _tcpInterface;
-    float _currentTemperature;
-    float _setpoint;
+    float _currentTemperature = 0;
+    float _setpoint = 0;
     std::shared_ptr<Segment> _currentSegment;
     unsigned long _timeToNextSegment;
     std::vector<float> _recordedTemperature;
@@ -40,5 +41,6 @@ private:
     time_t _recordingStartTime;
     bool _recording;
     long _segmentStartTime;
+    unsigned _outputPercent = 0;
     
 };
