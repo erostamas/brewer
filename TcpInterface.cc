@@ -111,6 +111,8 @@ std::vector<std::string> TcpInterface::getMessages() {
 
 void TcpInterface::sendMessage(std::string message) {
     if(/*_connected*/ true) {
+        //const char newline = '\n';
+        //message.append(&newline);
         write(_connectedSocketFd,(message).c_str(),message.length());
     }
 }

@@ -100,3 +100,14 @@ void CurveStore::initCurves() {
         }
     }
 }
+
+std::string CurveStore::getCurveNames() {
+    std::string ret = "curves: ";
+    for (auto&& curve : _curves) {
+        if (ret != "") {
+            ret.append(";");
+        }
+        ret.append(curve.first);
+    }
+    return ret;
+}

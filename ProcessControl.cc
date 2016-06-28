@@ -107,15 +107,14 @@ void ProcessControl::processCommand(std::string message) {
     } else if (message.substr(0, 12) == "get_setpoint"){
         std::string setpoint_str = "sp: " + std::to_string(_setpoint) + "\n";
         _tcpInterface->sendMessage(setpoint_str);
-    }
-    else if (message.substr(0, 12) == "inc_setpoint"){
+    } else if (message.substr(0, 12) == "inc_setpoint"){
         _setpoint++;
-    }
-    else if (message.substr(0, 12) == "dec_setpoint"){
+    } else if (message.substr(0, 12) == "dec_setpoint"){
         _setpoint--;
-    }
-    else if (message.substr(0, 9) == "playcurve"){
+    } else if (message.substr(0, 9) == "playcurve"){
         playCurve(message.substr(10, message.length()));
+    } else if (message.substr(0, 10) == "get_curves"){
+        _tcpInterface->sendMessage(_curveStore.getCurveNames() + "\n");
     }
 }
 
