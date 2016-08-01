@@ -1,4 +1,7 @@
-addons:
+sudo: required
+dist: trusty
+
+ddons:
   apt:
     packages:
       - gcc-4.8
