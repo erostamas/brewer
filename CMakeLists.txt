@@ -30,10 +30,5 @@ else()
   include_directories(BEFORE ${BOOST_INCLUDE_DIRS})
 endif()
 
-add_executable(brewer
-TcpInterface.cc
-ProcessControl.cc
-CurveStore.cc
-main.cc)
-
 add_subdirectory(test)
+add_subdirectory(src)
