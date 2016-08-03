@@ -1,3 +1,6 @@
+cmake_minimum_required(VERSION 3.1)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR})
+
 # compiler and linker flags
 if ((NOT CMAKE_CXX_FLAGS) OR (CMAKE_CXX_FLAGS MATCHES "^[ \t]*$"))
   set(CXX11_FLAG "-std=c++11")
@@ -13,8 +16,24 @@ if ((NOT CMAKE_CXX_FLAGS) OR (CMAKE_CXX_FLAGS MATCHES "^[ \t]*$"))
   endif()
 endif()
 
+#3pp
+set(BOOST_UNITTEST_LIBS "boost_unit_test_framework")
+if(BOOST_INCLUDE_DIRS AND BOOST_LIBRARY_DIRS)
+  message("-- BOOST paths specified: -I${BOOST_INCLUDE_DIRS} -L${BOOST_LIBRARY_DIRS}")
+  include_directories(BEFORE ${BOOST_INCLUDE_DIRS})
+  link_directories(${BOOST_LIBRARY_DIRS})
+else()
+  find_package(BOOST)
+  if(NOT BOOST_FOUND)
+    message(FATAL_ERROR "-- Boost not found, not specified, specify with -DBOOST_INCLUDE_DIRS and -DBOOST_LIBRARY_DIRS")
+  endif()
+  include_directories(BEFORE ${BOOST_INCLUDE_DIRS})
+endif()
+
 add_executable(brewer
 TcpInterface.cc
 ProcessControl.cc
 CurveStore.cc
 main.cc)
+
+add_subdirectory(test)
