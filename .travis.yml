@@ -18,4 +18,5 @@ before_script:
   - cd build
   - cmake ../
 
-script: make brewer
+script: make
+        ./test/test_brewer
