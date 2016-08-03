@@ -1,7 +1,7 @@
 sudo: required
 dist: trusty
 
-ddons:
+addons:
   apt:
     packages:
       - gcc-4.8
