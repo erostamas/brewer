@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.0)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR})
 
 # compiler and linker flags
@@ -9,10 +9,11 @@ if ((NOT CMAKE_CXX_FLAGS) OR (CMAKE_CXX_FLAGS MATCHES "^[ \t]*$"))
   endif()
   set(CMAKE_CXX_FLAGS "-O3 -g ${CXX11_FLAG} -Werror -Wall -DNDEBUG -lpthread -Wno-unused-result")
   if (CMAKE_BUILD_TYPE STREQUAL "Coverage")
-      set(CMAKE_CXX_FLAGS "-O0 -g ${CXX11_FLAG} -Werror -Wall -fprofile-arcs -ftest-coverage")
+    message("Coverage mode selected")
+      set(CMAKE_CXX_FLAGS "-O0 -g ${CXX11_FLAG} -Werror -Wall -lpthread -fprofile-arcs -ftest-coverage")
   endif()
   if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-      set(CMAKE_CXX_FLAGS "-O0 -g ${CXX11_FLAG} -Werror -Wall")
+      set(CMAKE_CXX_FLAGS "-O0 -g ${CXX11_FLAG} -Werror -Wall -lpthread")
   endif()
 endif()
 
@@ -32,3 +33,5 @@ endif()
 
 add_subdirectory(test)
 add_subdirectory(src)
+
+enable_testing()
