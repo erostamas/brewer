@@ -3,7 +3,7 @@
 BOOST_AUTO_TEST_SUITE(curve_store_test_suite)
 
 BOOST_AUTO_TEST_CASE(hello) {
-    BOOST_CHECK(false);
+    BOOST_CHECK(true);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
