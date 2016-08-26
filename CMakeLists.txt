@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.0)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR})
+set(Boost_USE_STATIC_LIBS ON)
 
 # compiler and linker flags
 if ((NOT CMAKE_CXX_FLAGS) OR (CMAKE_CXX_FLAGS MATCHES "^[ \t]*$"))
@@ -7,7 +8,7 @@ if ((NOT CMAKE_CXX_FLAGS) OR (CMAKE_CXX_FLAGS MATCHES "^[ \t]*$"))
   if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "4.8.2")
       set(CXX11_FLAG "-std=c++0x")
   endif()
-  set(CMAKE_CXX_FLAGS "-O3 -g ${CXX11_FLAG} -Werror -Wall -DNDEBUG -lpthread -Wno-unused-result")
+  set(CMAKE_CXX_FLAGS "-O3 -g ${CXX11_FLAG} -Werror -Wall -DBOOST_LOG_DYN_LINK -DNDEBUG -lpthread -Wno-unused-result")
   if (CMAKE_BUILD_TYPE STREQUAL "Coverage")
     message("Coverage mode selected")
       set(CMAKE_CXX_FLAGS "-O0 -g ${CXX11_FLAG} -Werror -Wall -lpthread -fprofile-arcs -ftest-coverage")

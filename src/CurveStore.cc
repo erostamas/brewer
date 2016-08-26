@@ -1,3 +1,4 @@
+#include <boost/log/trivial.hpp>
 #include <iostream>
 #include <fstream>
 
@@ -27,6 +28,7 @@ bool CurveStore::addCurve(std::string name, std::string curve_str) {
             unsigned long duration = 0;
             try {
                 setpoint = std::stod(values[0]);
+                BOOST_LOG_TRIVIAL(trace) << "Logging";
                 std::cout << "init segment setpoint: " << setpoint << std::endl;
             } catch (...) {
                 std::cout << "Exception during segment parsing" << std::endl;
@@ -102,10 +104,12 @@ void CurveStore::initCurves() {
 }
 
 std::string CurveStore::getCurveNames() {
-    std::string ret = "curves: ";
+    std::string ret = "";
     for (auto&& curve : _curves) {
         if (ret != "") {
             ret.append(";");
+        } else {
+            ret.append("curves: ");
         }
         ret.append(curve.first);
     }
