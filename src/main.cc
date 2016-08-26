@@ -17,7 +17,7 @@ void startTCPListening() {
 }
 
 void signalHandler( int signum ) {
-    std::cout << "Interrupt signal received, terminating...\n";
+    LOG_INFO << "Interrupt signal received, terminating...\n";
     exit(0);
 }
 

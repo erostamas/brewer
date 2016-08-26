@@ -29,24 +29,22 @@ bool CurveStore::addCurve(std::string name, std::string curve_str) {
             unsigned long duration = 0;
             try {
                 setpoint = std::stod(values[0]);
-                BOOST_LOG_TRIVIAL(trace) << "Logging";
-                LOG_INFO << "ewcyvflbvqewfklyhvf3kle2yfv23lyfv23vhf";
-                std::cout << "init segment setpoint: " << setpoint << std::endl;
+                LOG_DEBUG << "Segment parsed with setpoint: " << setpoint;
             } catch (...) {
-                std::cout << "Exception during segment parsing" << std::endl;
+                LOG_ERROR << "Exception during segment parsing";
                 return false;
             }
             if (values.size() == 2) {
                 try {
                     duration = std::stoul(values[1]);
-                    std::cout << "init segment duration: " << duration << std::endl;
+                    LOG_DEBUG << "Segment parsed with duration: " << duration;
                 } catch (...) {
-                    std::cout << "Exception during segment parsing" << std::endl;
+                    LOG_ERROR << "Exception during segment parsing";
                     return false;
                 }
             }
             auto new_segment = std::make_shared<Segment>(setpoint, duration);
-            std::cout << "creted segment: " << setpoint << " " << duration << std::endl;
+            LOG_DEBUG << "Added segment to curve " << name << " - sp: " << setpoint << " dur: " << duration;
             curve.push_back(new_segment);
         }
     }
@@ -59,7 +57,7 @@ Curve CurveStore::getCurve(std::string name) {
     try {
          curve = _curves.at(name);
     } catch (...) {
-        std::cout << "Exception during getting curve: " << name << ", it probably does not exist" << std::endl;
+        LOG_ERROR << "Exception during getting curve: " << name << ", it probably does not exist";
     }
     return curve;
 }
@@ -95,10 +93,10 @@ void CurveStore::initCurves() {
         {
             const std::vector<std::string> v = Utils::split(line, ' ');
             if (v.size() != 2) {
-                std::cout << "Error in curve definition" << std::endl;
+                LOG_ERROR << "Error in curve definition";
             } else {
                 if(addCurve(v[0], v[1])) {
-                    std::cout << "Initialized curve: " << v[0] << std::endl;
+                    LOG_INFO << "Successfully initialized curve: " << v[0];
                 }
             }
         }
