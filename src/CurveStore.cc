@@ -3,6 +3,7 @@
 #include <fstream>
 
 #include "CurveStore.h"
+#include "Logging.h"
 #include "Utils.h"
 
 CurveStore::CurveStore() {
@@ -29,6 +30,7 @@ bool CurveStore::addCurve(std::string name, std::string curve_str) {
             try {
                 setpoint = std::stod(values[0]);
                 BOOST_LOG_TRIVIAL(trace) << "Logging";
+                LOG_INFO << "ewcyvflbvqewfklyhvf3kle2yfv23lyfv23vhf";
                 std::cout << "init segment setpoint: " << setpoint << std::endl;
             } catch (...) {
                 std::cout << "Exception during segment parsing" << std::endl;
