@@ -1,5 +1,6 @@
 #include <boost/filesystem.hpp>
 #include <fstream>
+#include <iostream>
 
 using namespace boost::filesystem;
 
