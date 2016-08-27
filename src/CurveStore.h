@@ -11,12 +11,12 @@ class CurveStore {
 public:
     CurveStore();
     ~CurveStore();
-    void addCurve(std::string name, Curve curve);
+    void addCurve(std::string name, CurvePtr curve);
     bool addCurve(std::string name, std::string curve_str);
-    Curve getCurve(std::string name);
+    CurvePtr getCurve(std::string name);
     std::string getCurveNames();
-    void initCurves();
-    void saveCurves();
+    void initCurvesFromFile(std::string path);
+    void saveCurvesToFile(std::string path);
     unsigned int getSize();
 
     Curves _curves;

@@ -12,5 +12,8 @@ class ProcessControl;
 extern bool stopControlRequested;
 extern ProcessControl processcontrol;
 
-typedef std::vector<std::shared_ptr<Segment>> Curve;
-typedef std::map<std::string, Curve> Curves;
+typedef std::shared_ptr<Segment> SegmentPtr;
+typedef std::vector<SegmentPtr> Curve;
+
+typedef std::shared_ptr<Curve> CurvePtr;
+typedef std::map<std::string, CurvePtr> Curves;

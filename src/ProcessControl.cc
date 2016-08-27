@@ -27,8 +27,8 @@ ProcessControl::~ProcessControl() {
 void ProcessControl::run() {
     float simval = 0.0;
     _segmentStartTime = -1;
-    _curveStore.initCurves();
-    _curveStore.saveCurves();
+    _curveStore.initCurvesFromFile("/brewer_files/brewer_curves.txt");
+    _curveStore.saveCurvesToFile("/brewer_files/brewer_curves.txt");
     while (!stopControlRequested) {
         processCommands();
         if (_simulationMode) {
@@ -40,11 +40,11 @@ void ProcessControl::run() {
         if (_mode == MODE::AUTO) {
             std::cout << "current segment duration: " << _currentSegment->getDuration() << std::endl;
             if ((_segmentStartTime > 0) && ((std::time(0) - _segmentStartTime) >= _currentSegment->getDuration())) {
-                    if (_currentSegmentIndex == _curveStore.getCurve(_currentCurve).size() - 1) {
+                    if (_currentSegmentIndex == _curveStore.getCurve(_currentCurve)->size() - 1) {
                         _segmentStartTime = -1;
                         stopCurve();
                     } else {
-                        _currentSegment = _curveStore.getCurve(_currentCurve)[++_currentSegmentIndex];
+                        _currentSegment = _curveStore.getCurve(_currentCurve)->at(++_currentSegmentIndex);
                         _setpoint = _currentSegment->getSetpoint();
                         _segmentStartTime = -1;
                     }
@@ -70,10 +70,10 @@ void ProcessControl::run() {
 }
 
 void ProcessControl::playCurve(std::string name) {
-    Curve curve = _curveStore.getCurve(name);
-    if (curve.size()) {
+    CurvePtr curve = _curveStore.getCurve(name);
+    if (curve->size()) {
         _currentCurve = name;
-        _currentSegment = curve[0];
+        _currentSegment = curve->at(0);
         _setpoint = _currentSegment->getSetpoint();
         std::cout << "setpoint set to: " << _setpoint << std::endl;
         _mode = MODE::AUTO;
@@ -147,7 +147,7 @@ void ProcessControl::printState() {
               } */
     std::cout << "Current time in seconds: " << std::time(0) << "\n";
               if (_mode == MODE::AUTO) {
-                  std::cout << "Number of segments:      " << _curveStore.getCurve(_currentCurve).size() << "\n"
+                  std::cout << "Number of segments:      " << _curveStore.getCurve(_currentCurve)->size() << "\n"
                             << "Current segment index:   " << _currentSegmentIndex << "\n"
                             << "Time to next segment:    " << _timeToNextSegment << "\n";
               }

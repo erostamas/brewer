@@ -34,7 +34,7 @@ private:
     TcpInterface* _tcpInterface;
     float _currentTemperature = 0;
     float _setpoint = 0;
-    std::shared_ptr<Segment> _currentSegment;
+    SegmentPtr _currentSegment;
     unsigned long _timeToNextSegment;
     std::vector<float> _recordedTemperature;
     std::vector<float> _recordedSetpoint;
