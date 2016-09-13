@@ -71,9 +71,10 @@ void TcpInterface::run() {
     std::string incoming_message;
     long last_recieved_time = 0;
     int portno = 5000;
-    
+    _shouldExit = false;
+
     sockfd = bindToPort(portno);
-	while(incoming_message != "stop") {
+	while(!_shouldExit) {
         if((last_recieved_time == 0) || ((std::time(0) - last_recieved_time) > 3)) {
             //_connected = false;
             if(_connectedSocketFd > 0) { close(_connectedSocketFd); }
@@ -95,12 +96,15 @@ void TcpInterface::run() {
         }
         incoming_message = buffer;
         if (incoming_message.size() > 0) {
+            if (incoming_message == "stop") {
+                _shouldExit = true;
+            }
             _messageQueue.push_back(incoming_message);
         }
 	}
+    std::cout << "Closing TCP connection..." << std::endl;
 	close(_connectedSocketFd);
     close(sockfd);
-	_exitCommand = true;
 }
 
 std::vector<std::string> TcpInterface::getMessages() {

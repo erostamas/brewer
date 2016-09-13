@@ -11,7 +11,7 @@ public:
     void sendMessage(std::string);
     void listenForConnection(int sockfd, int portno);
     
-    bool _exitCommand;
+    bool _shouldExit = false;;
     std::vector<std::string> _messageQueue;
     int _connectedSocketFd = -1;
     bool _connected;
