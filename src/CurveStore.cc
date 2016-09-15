@@ -7,11 +7,9 @@
 #include "Utils.h"
 
 CurveStore::CurveStore() {
-    
 }
 
 CurveStore::~CurveStore() {
-
 }
 
 void CurveStore::addCurve(std::string name, CurvePtr curve) {

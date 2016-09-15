@@ -39,7 +39,7 @@ void ProcessControl::run() {
         
         if (_mode == MODE::AUTO) {
             std::cout << "current segment duration: " << _currentSegment->getDuration() << std::endl;
-            if ((_segmentStartTime > 0) && ((std::time(0) - _segmentStartTime) >= _currentSegment->getDuration())) {
+            if ((_segmentStartTime > 0) && ((unsigned)(std::time(0) - _segmentStartTime) >= _currentSegment->getDuration())) {
                     if (_currentSegmentIndex == _curveStore.getCurve(_currentCurve)->size() - 1) {
                         _segmentStartTime = -1;
                         stopCurve();

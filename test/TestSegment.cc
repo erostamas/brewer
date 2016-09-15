@@ -15,10 +15,27 @@ public:
 
 BOOST_FIXTURE_TEST_SUITE(segment_test_suite, TestSegment)
 
-BOOST_AUTO_TEST_CASE(test_set_setpoint) {
-    setSetpoint(3.4);
-    
-    BOOST_CHECK_EQUAL(3.4, getSetpoint());
+BOOST_AUTO_TEST_CASE(test_segment_default_constructor) {
+    BOOST_CHECK_EQUAL(0.0, getSetpoint());
+    BOOST_CHECK_EQUAL(0.0, getDuration());
+}
+
+BOOST_AUTO_TEST_CASE(test_segment_setsetpoint) {
+    setSetpoint(1.2);
+
+    BOOST_CHECK_EQUAL(1.2, getSetpoint());
+}
+
+BOOST_AUTO_TEST_CASE(test_segment_setduration) {
+    setDuration(2);
+
+    BOOST_CHECK_EQUAL(2, getDuration());
+}
+
+BOOST_AUTO_TEST_CASE(test_segment_tostring) {
+    setSetpoint(1.2);
+    setDuration(2);
+    BOOST_CHECK_EQUAL("1.20:2", toString());
 }
 
 BOOST_AUTO_TEST_SUITE_END()
