@@ -7,17 +7,24 @@
 #include "Logging.h"
 #include "ProcessControl.h"
 #include "TcpInterface.h"
+#include "UnixDomainSocketInterface.h"
 
 bool stopControlRequested = false;
 
 TcpInterface tcpint;
+UnixDomainSocketInterface unixint;
 
 void startTCPListening() {
 	tcpint.run();
 }
 
+void startUnixDomainListening() {
+	unixint.run();
+}
+
 void signalHandler( int signum ) {
     LOG_INFO << "Interrupt signal received, terminating...\n";
+    unlink("/var/run/brewer/brewer_socket_file");
     exit(0);
 }
 
@@ -26,9 +33,10 @@ int main(void) {
     signal(SIGINT, signalHandler);
     signal(SIGTERM, signalHandler);
 
-    ProcessControl processcontrol(&tcpint);
+    ProcessControl processcontrol(&tcpint, &unixint);
 
 	std::thread t1(startTCPListening);
+    std::thread t2(startUnixDomainListening);
     processcontrol.setSimulationMode(true);
     processcontrol.run();
 	exit(0);

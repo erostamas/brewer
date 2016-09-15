@@ -2,6 +2,7 @@
 
 #include "CurveStore.h"
 #include "TcpInterface.h"
+#include "UnixDomainSocketInterface.h"
 
 enum class MODE {
     MANUAL,
@@ -10,7 +11,7 @@ enum class MODE {
 
 class ProcessControl {
 public:
-    ProcessControl(TcpInterface*);
+    ProcessControl(TcpInterface*, UnixDomainSocketInterface*);
     ~ProcessControl();
 	void setSimulationMode(bool simulationMode)           { _simulationMode = simulationMode;         }
 
@@ -32,6 +33,7 @@ private:
     std::string _currentCurve;
     unsigned int _currentSegmentIndex;
     TcpInterface* _tcpInterface;
+    UnixDomainSocketInterface* _unixInterface;
     float _currentTemperature = 0;
     float _setpoint = 0;
     SegmentPtr _currentSegment;

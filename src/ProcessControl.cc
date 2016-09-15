@@ -13,7 +13,9 @@
 #define PROPORTIONAL 1
 #define SIM_COOLING 0.1
 
-ProcessControl::ProcessControl(TcpInterface* tcpInterface) : _tcpInterface(tcpInterface) {
+ProcessControl::ProcessControl(TcpInterface* tcpInterface, UnixDomainSocketInterface* unixInterface) :
+    _tcpInterface(tcpInterface),
+    _unixInterface(unixInterface) {
     _mode = MODE::MANUAL;
     _currentSegmentIndex = 0;
     _currentTemperature = 0.0;
@@ -91,6 +93,11 @@ void ProcessControl::stopCurve() {
 
 void ProcessControl::processCommands() {
     std::vector<std::string> commandqueue = _tcpInterface->getMessages();
+    while (commandqueue.size()) {
+        processCommand(commandqueue[0]);
+        commandqueue.erase(commandqueue.begin());
+    }
+    commandqueue = _unixInterface->getMessages();
     while (commandqueue.size()) {
         processCommand(commandqueue[0]);
         commandqueue.erase(commandqueue.begin());
