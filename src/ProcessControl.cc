@@ -1,5 +1,6 @@
 #define _GLIBCXX_USE_NANOSLEEP
 
+#include <algorithm>
 #include <thread>
 #include <iostream>
 #include <tgmath.h>
@@ -130,9 +131,10 @@ void ProcessControl::writeXML() {
     dataxmlfile.open ("/var/www/html/data.xml");
     dataxmlfile << "<?xml version=\"1.0\"?>";
     dataxmlfile << "<processdata>\n";
-    dataxmlfile << "<temp>" << std::setprecision(2) << _currentTemperature << "</temp>\n";
-    dataxmlfile << "<setpoint>" << std::setprecision(2) << _setpoint << "</setpoint>\n";
-    dataxmlfile << "<delta>" << std::setprecision(2) << _setpoint - _currentTemperature << "</delta>\n";
+    dataxmlfile << "<temp>" << _currentTemperature << "</temp>\n";
+    dataxmlfile << "<setpoint>" << _setpoint << "</setpoint>\n";
+    dataxmlfile << "<output>" << _outputPercent << "</output>\n";
+    dataxmlfile << "<delta>" << _setpoint - _currentTemperature << "</delta>\n";
     dataxmlfile << "<mode>";
     switch(_mode) {
                       case MODE::MANUAL: dataxmlfile << "MANUAL"; break;
@@ -202,7 +204,7 @@ void ProcessControl::calculatePIDOutput() {
     if (_setpoint < 20) {
         _outputPercent = 0;
     } else {
-        _outputPercent = PROPORTIONAL * (_setpoint - _currentTemperature) / _setpoint * 100;
+        _outputPercent = std::max(std::min(float(100.0), PROPORTIONAL * (_setpoint - _currentTemperature) / _setpoint * 100), float(0.0));
     }
 }
 
