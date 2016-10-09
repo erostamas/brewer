@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 3.0)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR})
 set(Boost_USE_STATIC_LIBS ON)
 
-# balbla
 # compiler and linker flags
 if ((NOT CMAKE_CXX_FLAGS) OR (CMAKE_CXX_FLAGS MATCHES "^[ \t]*$"))
   set(CXX11_FLAG "-std=c++11")
