@@ -20,7 +20,7 @@ then
     cd build
     cmake ../
     make
-    echo "ok finished"
+    ctest
 else
     echo "ERROR: Not in brewer repository!"
     echo "       Exiting..."
