@@ -1,5 +1,3 @@
-#test gerrit
-
 set (TESTNAME test_brewer)  
 include_directories(../src)
 
