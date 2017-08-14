@@ -26,7 +26,7 @@ using std::to_string;
 size_t log_level_number = severity_level::INFO;
 
 string get_log_dir() {
-        return string("/home/erostamas/");
+        return string("/brewer_files/log/");
 }
 
 const std::string log_levels[] = {
