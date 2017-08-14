@@ -1,5 +1,3 @@
-#define BOOST_LOG_DYN_LINK 1
-
 #include <gmock/gmock.h>
 #include <boost/filesystem.hpp>
 #include <fstream>

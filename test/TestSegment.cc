@@ -1,41 +1,30 @@
-#define BOOST_LOG_DYN_LINK 1
-
-#include <boost/test/unit_test.hpp>
-#include <boost/filesystem.hpp>
+#include <gmock/gmock.h>
 
 #include "Segment.h"
-#include "GlobalTestFixture.h"
 
-class TestSegment : public Segment{
-public:
-    TestSegment() {
-        std::cout << std::endl << "********** " << boost::unit_test::framework::current_test_case().p_name << " **********" << std::endl;       
-    }
-};
-
-BOOST_FIXTURE_TEST_SUITE(segment_test_suite, TestSegment)
-
-BOOST_AUTO_TEST_CASE(test_segment_default_constructor) {
-    BOOST_CHECK_EQUAL(0.0, getSetpoint());
-    BOOST_CHECK_EQUAL(0.0, getDuration());
+TEST(TestSegment, test_segment_default_constructor) {
+    Segment s;
+    EXPECT_EQ(0.0, s.getSetpoint());
+    EXPECT_EQ(0.0, s.getDuration());
 }
 
-BOOST_AUTO_TEST_CASE(test_segment_setsetpoint) {
-    setSetpoint(1.2);
+TEST(TestSegment, test_segment_setsetpoint) {
+    Segment s;
+    s.setSetpoint(1.2);
 
-    BOOST_CHECK_EQUAL(1.2, getSetpoint());
+    EXPECT_EQ(1.2, s.getSetpoint());
 }
 
-BOOST_AUTO_TEST_CASE(test_segment_setduration) {
-    setDuration(2);
+TEST(TestSegment, test_segment_setduration) {
+    Segment s;
+    s.setDuration(2);
 
-    BOOST_CHECK_EQUAL(2, getDuration());
+    EXPECT_EQ(2, s.getDuration());
 }
 
-BOOST_AUTO_TEST_CASE(test_segment_tostring) {
-    setSetpoint(1.2);
-    setDuration(2);
-    BOOST_CHECK_EQUAL("1.20:2", toString());
+TEST(TestSegment, test_segment_tostring) {
+    Segment s;
+    s.setSetpoint(1.2);
+    s.setDuration(2);
+    EXPECT_EQ("1.20:2", s.toString());
 }
-
-BOOST_AUTO_TEST_SUITE_END()
