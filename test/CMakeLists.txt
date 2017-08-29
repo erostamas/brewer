@@ -3,7 +3,8 @@ include_directories(../src)
 
 add_executable(${TESTNAME}
     TestCurveStore.cc
-    TestSegment.cc)
+    TestSegment.cc
+    TestConfig.cc)
 
 target_link_libraries(${TESTNAME}
     brewer_library

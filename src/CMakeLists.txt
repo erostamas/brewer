@@ -5,6 +5,7 @@ add_library(brewer_library STATIC
     CurveStore.cc
     Segment.cc
     Logging.cc
+    Config.cc
 )
 target_link_libraries(brewer_library
     boost_log
