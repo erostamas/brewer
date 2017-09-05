@@ -36,7 +36,6 @@ endif()
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/common)
 
-add_subdirectory(test)
 add_subdirectory(src)
 
 enable_testing()

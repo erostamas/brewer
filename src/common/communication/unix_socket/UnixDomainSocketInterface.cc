@@ -10,7 +10,6 @@
 
 #include "UnixDomainSocketInterface.h"
 #include "Common.h"
-#include "ProcessControl.h"
 
 int UnixDomainSocketInterface::bindToPath(std::string path) {
 
