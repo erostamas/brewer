@@ -1,20 +1,24 @@
+include_directories(common)
+
+add_subdirectory(common)
+add_subdirectory(communication)
+
 add_library(brewer_library STATIC
-    TcpInterface.cc
     UnixDomainSocketInterface.cc
     ProcessControl.cc
     CurveStore.cc
     Segment.cc
-    Logging.cc
-    Config.cc
 )
+
 target_link_libraries(brewer_library
-    boost_log
-    boost_thread
-    boost_system)
+    ${BOOST_LIBS}
+    brewer_common
+)
 
 add_executable(brewer
-    main.cc)
+    main.cc
+)
 
 target_link_libraries(brewer
-    brewer_library)
-
+    brewer_library
+)

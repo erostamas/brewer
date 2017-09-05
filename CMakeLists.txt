@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.0)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR})
 set(Boost_USE_STATIC_LIBS ON)
+set(BOOST_LIBS boost_log boost_system boost_thread)
 enable_testing()
 
 # compiler and linker flags
@@ -32,6 +33,8 @@ else()
   endif()
   include_directories(BEFORE ${BOOST_INCLUDE_DIRS})
 endif()
+
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/common)
 
 add_subdirectory(test)
 add_subdirectory(src)

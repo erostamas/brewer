@@ -14,8 +14,7 @@
 #define PROPORTIONAL 1
 #define SIM_COOLING 0.1
 
-ProcessControl::ProcessControl(TcpInterface* tcpInterface, UnixDomainSocketInterface* unixInterface) :
-    _tcpInterface(tcpInterface),
+ProcessControl::ProcessControl(UnixDomainSocketInterface* unixInterface) :
     _unixInterface(unixInterface) {
     _mode = MODE::MANUAL;
     _currentSegmentIndex = 0;
@@ -93,12 +92,7 @@ void ProcessControl::stopCurve() {
 }
 
 void ProcessControl::processCommands() {
-    std::vector<std::string> commandqueue = _tcpInterface->getMessages();
-    while (commandqueue.size()) {
-        processCommand(commandqueue[0]);
-        commandqueue.erase(commandqueue.begin());
-    }
-    commandqueue = _unixInterface->getMessages();
+    std::vector<std::string> commandqueue = _unixInterface->getMessages();
     while (commandqueue.size()) {
         processCommand(commandqueue[0]);
         commandqueue.erase(commandqueue.begin());
@@ -106,7 +100,7 @@ void ProcessControl::processCommands() {
 }
 
 void ProcessControl::processCommand(std::string message) {
-    if (message.substr(0, 8) == "setpoint") {
+    /* if (message.substr(0, 8) == "setpoint") {
         // TODO: exception handling
         _setpoint = stod(message.substr(8));
     } else if (message.substr(0, 15) == "get_temperature"){
@@ -123,7 +117,7 @@ void ProcessControl::processCommand(std::string message) {
         playCurve(message.substr(10, message.length()));
     } else if (message.substr(0, 10) == "get_curves"){
         _tcpInterface->sendMessage(_curveStore.getCurveNames() + "\n");
-    }
+    } */
 }
 
 void ProcessControl::writeXML() {

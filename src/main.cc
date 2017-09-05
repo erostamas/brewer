@@ -6,17 +6,11 @@
 #include "Common.h"
 #include "Logging.h"
 #include "ProcessControl.h"
-#include "TcpInterface.h"
 #include "UnixDomainSocketInterface.h"
 
 bool stopControlRequested = false;
 
-TcpInterface tcpint;
 UnixDomainSocketInterface unixint;
-
-void startTCPListening() {
-	tcpint.run();
-}
 
 void startUnixDomainListening() {
 	unixint.run();
@@ -33,9 +27,8 @@ int main(void) {
     signal(SIGINT, signalHandler);
     signal(SIGTERM, signalHandler);
 
-    ProcessControl processcontrol(&tcpint, &unixint);
+    ProcessControl processcontrol(&unixint);
 
-	std::thread t1(startTCPListening);
     std::thread t2(startUnixDomainListening);
     processcontrol.setSimulationMode(true);
     processcontrol.run();

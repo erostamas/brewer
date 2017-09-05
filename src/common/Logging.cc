@@ -58,7 +58,7 @@ void init_logging() {
                 << expr::smessage));
 
     for (size_t log_level_index = 0; log_level_index < log_levels_size; ++log_level_index) {
-        if (log_levels[log_level_index] == "INFO") {
+        if (log_levels[log_level_index] == "DEBUG") {
             log_level_number = log_level_index;
             break;
         }

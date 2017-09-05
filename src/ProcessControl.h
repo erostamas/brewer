@@ -1,7 +1,6 @@
 #pragma once
 
 #include "CurveStore.h"
-#include "TcpInterface.h"
 #include "UnixDomainSocketInterface.h"
 
 enum class MODE {
@@ -11,7 +10,7 @@ enum class MODE {
 
 class ProcessControl {
 public:
-    ProcessControl(TcpInterface*, UnixDomainSocketInterface*);
+    ProcessControl(UnixDomainSocketInterface*);
     ~ProcessControl();
 	void setSimulationMode(bool simulationMode)           { _simulationMode = simulationMode;         }
 
@@ -32,7 +31,6 @@ private:
     CurveStore _curveStore;
     std::string _currentCurve;
     unsigned int _currentSegmentIndex;
-    TcpInterface* _tcpInterface;
     UnixDomainSocketInterface* _unixInterface;
     float _currentTemperature = 0;
     float _setpoint = 0;
