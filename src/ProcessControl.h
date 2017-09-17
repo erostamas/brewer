@@ -2,6 +2,7 @@
 
 #include "CurveStore.h"
 #include "UnixDomainSocketInterface.h"
+#include "UdpInterface.h"
 
 enum class MODE {
     MANUAL,
@@ -10,7 +11,7 @@ enum class MODE {
 
 class ProcessControl {
 public:
-    ProcessControl(UnixDomainSocketInterface*);
+    ProcessControl();
     ~ProcessControl();
 	void setSimulationMode(bool simulationMode)           { _simulationMode = simulationMode;         }
 
@@ -42,5 +43,7 @@ private:
     bool _recording;
     long _segmentStartTime;
     unsigned _outputPercent = 0;
+    UdpInterface _udpInterface;
+    std::string _lastCommand;
     
 };

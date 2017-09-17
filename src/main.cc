@@ -27,9 +27,9 @@ int main(void) {
     signal(SIGINT, signalHandler);
     signal(SIGTERM, signalHandler);
 
-    ProcessControl processcontrol(&unixint);
+    ProcessControl processcontrol;
 
-    std::thread t2(startUnixDomainListening);
+    //std::thread t2(startUnixDomainListening);
     processcontrol.setSimulationMode(true);
     processcontrol.run();
 	exit(0);

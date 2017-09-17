@@ -18,8 +18,9 @@ public:
               , unsigned port
               , std::string message);
     void receiveThread();
-
+    std::list<const char*> getMessages();   
 private:
     unsigned _listenPort = 0;
     std::thread _receiveThread;
+    std::unique_ptr<UdpReceiver> _receiver = nullptr;
 };

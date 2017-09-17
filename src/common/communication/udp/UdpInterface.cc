@@ -29,9 +29,20 @@ void UdpInterface::receiveThread() {
     try {
         LOG_INFO << "[UdpInterface] Listening on port: " << _listenPort;
         boost::asio::io_service ioService;
-        UdpReceiver receiver(ioService, _listenPort);
+        _receiver = std::unique_ptr<UdpReceiver>(new UdpReceiver(ioService, _listenPort));
         ioService.run();
     } catch (const std::exception& ex) {
         LOG_ERROR << "[UdpInterface] Exception on receive thread: " << ex.what() << std::endl;
+        _receiver = nullptr;
+    }
+}
+
+std::list<const char*> UdpInterface::getMessages() {
+    if (_receiver) {
+        return _receiver->getMessages();
+    } else {
+        _receiveThread = std::thread(&UdpInterface::receiveThread, this);
+        std::list<const char*> empty;
+        return empty;
     }
 }

@@ -14,8 +14,8 @@
 #define PROPORTIONAL 1
 #define SIM_COOLING 0.1
 
-ProcessControl::ProcessControl(UnixDomainSocketInterface* unixInterface) :
-    _unixInterface(unixInterface) {
+ProcessControl::ProcessControl()
+    : _udpInterface(50001) {
     _mode = MODE::MANUAL;
     _currentSegmentIndex = 0;
     _currentTemperature = 0.0;
@@ -92,14 +92,19 @@ void ProcessControl::stopCurve() {
 }
 
 void ProcessControl::processCommands() {
-    std::vector<std::string> commandqueue = _unixInterface->getMessages();
+/*     std::vector<std::string> commandqueue = _unixInterface->getMessages();
     while (commandqueue.size()) {
         processCommand(commandqueue[0]);
         commandqueue.erase(commandqueue.begin());
+    } */
+
+    for (auto msg : _udpInterface.getMessages()) {
+        processCommand(std::string(msg));
     }
 }
 
 void ProcessControl::processCommand(std::string message) {
+    _lastCommand = message;
     /* if (message.substr(0, 8) == "setpoint") {
         // TODO: exception handling
         _setpoint = stod(message.substr(8));
@@ -108,12 +113,12 @@ void ProcessControl::processCommand(std::string message) {
         _tcpInterface->sendMessage(temp);
     } else if (message.substr(0, 12) == "get_setpoint"){
         std::string setpoint_str = "sp: " + std::to_string(_setpoint) + "\n";
-        _tcpInterface->sendMessage(setpoint_str);
-    } else if (message.substr(0, 12) == "inc_setpoint"){
+        _tcpInterface->sendMessage(setpoint_str); */
+    if (message.substr(0, 12) == "inc_setpoint"){
         _setpoint++;
     } else if (message.substr(0, 12) == "dec_setpoint"){
         _setpoint--;
-    } else if (message.substr(0, 9) == "playcurve"){
+    }/*  else if (message.substr(0, 9) == "playcurve"){
         playCurve(message.substr(10, message.length()));
     } else if (message.substr(0, 10) == "get_curves"){
         _tcpInterface->sendMessage(_curveStore.getCurveNames() + "\n");
@@ -160,10 +165,10 @@ void ProcessControl::printState() {
               << "Delta                       " << _setpoint - _currentTemperature << "\n"
               << "Current Mode:               ";
               switch(_mode) {
-                  case MODE::MANUAL: std::cout << "MANUAL"; break;
-                  case MODE::AUTO: std::cout << "AUTO"; break;
+                  case MODE::MANUAL: std::cout << "MANUAL\n"; break;
+                  case MODE::AUTO: std::cout << "AUTO\n"; break;
               };
-    std::cout << std::endl;
+              std::cout << "Last command received: " << _lastCommand << std::endl;
 }
 
 void ProcessControl::startRecording() {

@@ -37,3 +37,13 @@ void UdpReceiver::handleReceive(const boost::system::error_code& error
         startReceive();
 }
 
+std::list<const char*> UdpReceiver::getMessages() {
+    _messageContainerMutex.lock();
+    auto tmp = _messages;
+    _messages.clear();
+    _messageContainerMutex.unlock();
+    return tmp;
+}
+
+
+
