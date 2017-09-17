@@ -1,7 +1,6 @@
 #pragma once
 
 #include "CurveStore.h"
-#include "UnixDomainSocketInterface.h"
 #include "UdpInterface.h"
 
 enum class MODE {
@@ -32,7 +31,6 @@ private:
     CurveStore _curveStore;
     std::string _currentCurve;
     unsigned int _currentSegmentIndex;
-    UnixDomainSocketInterface* _unixInterface;
     float _currentTemperature = 0;
     float _setpoint = 0;
     SegmentPtr _currentSegment;

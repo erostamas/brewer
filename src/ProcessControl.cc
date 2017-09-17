@@ -92,12 +92,6 @@ void ProcessControl::stopCurve() {
 }
 
 void ProcessControl::processCommands() {
-/*     std::vector<std::string> commandqueue = _unixInterface->getMessages();
-    while (commandqueue.size()) {
-        processCommand(commandqueue[0]);
-        commandqueue.erase(commandqueue.begin());
-    } */
-
     for (auto msg : _udpInterface.getMessages()) {
         processCommand(std::string(msg));
     }

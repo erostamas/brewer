@@ -6,15 +6,8 @@
 #include "Common.h"
 #include "Logging.h"
 #include "ProcessControl.h"
-#include "UnixDomainSocketInterface.h"
 
 bool stopControlRequested = false;
-
-UnixDomainSocketInterface unixint;
-
-void startUnixDomainListening() {
-	unixint.run();
-}
 
 void signalHandler( int signum ) {
     LOG_INFO << "Interrupt signal received, terminating...\n";
@@ -29,7 +22,6 @@ int main(void) {
 
     ProcessControl processcontrol;
 
-    //std::thread t2(startUnixDomainListening);
     processcontrol.setSimulationMode(true);
     processcontrol.run();
 	exit(0);
