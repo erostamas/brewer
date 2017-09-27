@@ -22,7 +22,7 @@ int main(void) {
 
     ProcessControl processcontrol;
 
-    processcontrol.setSimulationMode(true);
+    //processcontrol.setSimulationMode(true);
     processcontrol.run();
 	exit(0);
 }

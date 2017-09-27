@@ -6,6 +6,7 @@
 #include <tgmath.h>
 #include <fstream>
 #include <iomanip>
+#include <wiringPiSPI.h>
 
 #include "ProcessControl.h"
 #include "Common.h"
@@ -23,22 +24,51 @@ ProcessControl::ProcessControl()
 }
 
 ProcessControl::~ProcessControl() {
-    
+
 }
 
 void ProcessControl::run() {
-    float simval = 0.0;
+    if (wiringPiSPISetup (0, 1000000) < 0)
+        fprintf (stderr, "SPI Setup failed: %s\n", strerror (errno));
+
+    unsigned char msg[] = {0x80, 0xD0};
+    wiringPiSPIDataRW (0, msg, 2);
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    msg[0] = 0x00;
+    msg[1] = 0x00;
+    wiringPiSPIDataRW (0, msg, 2);
+    std::cout << "CONFIG: " << int(msg[0]) << " " << int(msg[1]) << std::endl;
+    //float simval = 0.0;
     _segmentStartTime = -1;
     _curveStore.initCurvesFromFile("/brewer_files/brewer_curves.txt");
     _curveStore.saveCurvesToFile("/brewer_files/brewer_curves.txt");
     while (!stopControlRequested) {
+        int val;
+        unsigned char recv[50];
+        recv[0] = 0x01;
+        recv[1] = 0x00;
+        wiringPiSPIDataRW (0, recv, 2);
+        val = recv[1];
+        val = val << 8;
+        std::cout << "MSB: " << int(recv[0]) << " " << int(recv[1]) << std::endl;
+        recv[0] = 0x02;
+        recv[1] = 0x00;
+        wiringPiSPIDataRW (0, recv, 2);
+        val += recv[1];
+        std::cout << "LSB: " << int(recv[0]) << " " << int(recv[1]) << std::endl;
+        std::cout << "value: " << val << std::endl;
+        std::cout << "ratio: " << (double)(val) / 32768 << std::endl;
+        std::cout << "100 plus: " << ((double)(val) / 32768 * 430.0 - 100.0) << std::endl;
+        std::cout << "temp: " << ((double)(val) / 32768 * 430.0 - 100.0) * 10 / 3.9 << std::endl;
+        _currentTemperature = ((double)(val) / 32768 * 430.0 - 100.0) * 10 / 3.9;
         processCommands();
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
         if (_simulationMode) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-            _currentTemperature = simval;
-            simval = simval + _outputPercent * 0.1 - SIM_COOLING;
+            //std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+            //_currentTemperature = simval;
+            //simval = simval + _outputPercent * 0.1 - SIM_COOLING;
         }
-        
+
         if (_mode == MODE::AUTO) {
             std::cout << "current segment duration: " << _currentSegment->getDuration() << std::endl;
             if ((_segmentStartTime > 0) && ((unsigned)(std::time(0) - _segmentStartTime) >= _currentSegment->getDuration())) {
@@ -65,8 +95,9 @@ void ProcessControl::run() {
             _recordedTemperature.push_back(_currentTemperature);
             _recordedSetpoint.push_back(_setpoint);
         }
+
         calculatePIDOutput();
-        printState();
+        //printState();
         writeXML();
     }
 }
@@ -99,16 +130,16 @@ void ProcessControl::processCommands() {
 
 void ProcessControl::processCommand(std::string message) {
     _lastCommand = message;
-    /* if (message.substr(0, 8) == "setpoint") {
+     if (message.substr(0, 8) == "setpoint") {
         // TODO: exception handling
         _setpoint = stod(message.substr(8));
-    } else if (message.substr(0, 15) == "get_temperature"){
+    /*} else if (message.substr(0, 15) == "get_temperature"){
         std::string temp = "temp: " + std::to_string(_currentTemperature) + "\n";
         _tcpInterface->sendMessage(temp);
     } else if (message.substr(0, 12) == "get_setpoint"){
         std::string setpoint_str = "sp: " + std::to_string(_setpoint) + "\n";
         _tcpInterface->sendMessage(setpoint_str); */
-    if (message.substr(0, 12) == "inc_setpoint"){
+    } else if (message.substr(0, 12) == "inc_setpoint"){
         _setpoint++;
     } else if (message.substr(0, 12) == "dec_setpoint"){
         _setpoint--;
