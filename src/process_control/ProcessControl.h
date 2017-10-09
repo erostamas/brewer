@@ -2,11 +2,8 @@
 
 #include "CurveStore.h"
 #include "UdpInterface.h"
-
-enum class MODE {
-    MANUAL,
-    AUTO
-};
+#include "ProcessVariable.h"
+#include "XmlSerializer.h"
 
 class ProcessControl {
 public:
@@ -19,20 +16,19 @@ public:
     void stopCurve();
     void processCommands();
     void processCommand(std::string message);
-    void writeXML();
-    void printState();
     void startRecording();
     void stopRecording();
     void calculatePIDOutput();
 
 private:
+    ProcessVariable<TYPE::DOUBLE> _currentTemperature;
+    ProcessVariable<TYPE::DOUBLE> _setpoint;
+    ProcessVariable<TYPE::INTEGER> _outputPercent;
+    ProcessVariable<TYPE::MODE> _mode;
     bool _simulationMode;
-    MODE _mode;
     CurveStore _curveStore;
     std::string _currentCurve;
     unsigned int _currentSegmentIndex;
-    float _currentTemperature = 0;
-    float _setpoint = 0;
     SegmentPtr _currentSegment;
     unsigned long _timeToNextSegment;
     std::vector<float> _recordedTemperature;
@@ -40,8 +36,8 @@ private:
     time_t _recordingStartTime;
     bool _recording;
     long _segmentStartTime;
-    unsigned _outputPercent = 0;
     UdpInterface _udpInterface;
     std::string _lastCommand;
+    XmlSerializer _xmlSerializer;
     
 };

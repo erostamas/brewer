@@ -16,15 +16,17 @@
 #define SIM_COOLING 0.1
 
 ProcessControl::ProcessControl()
-    : _udpInterface(50001) {
+    : _currentTemperature("temp", Accessibility::READWRITE)
+    , _setpoint("setpoint", Accessibility::READWRITE)
+    , _outputPercent("output", Accessibility::READWRITE)
+    , _mode("mode", Accessibility::READWRITE)
+    , _udpInterface(50001)
+    , _xmlSerializer("/var/www/html/data.xml") {
     _mode = MODE::MANUAL;
     _currentSegmentIndex = 0;
-    _currentTemperature = 0.0;
-    _setpoint = 0.0;
 }
 
 ProcessControl::~ProcessControl() {
-
 }
 
 void ProcessControl::run() {
@@ -37,36 +39,30 @@ void ProcessControl::run() {
     msg[0] = 0x00;
     msg[1] = 0x00;
     wiringPiSPIDataRW (0, msg, 2);
-    std::cout << "CONFIG: " << int(msg[0]) << " " << int(msg[1]) << std::endl;
-    //float simval = 0.0;
+    float simval = 0.0;
     _segmentStartTime = -1;
     _curveStore.initCurvesFromFile("/brewer_files/brewer_curves.txt");
     _curveStore.saveCurvesToFile("/brewer_files/brewer_curves.txt");
     while (!stopControlRequested) {
-        int val;
-        unsigned char recv[50];
-        recv[0] = 0x01;
-        recv[1] = 0x00;
-        wiringPiSPIDataRW (0, recv, 2);
-        val = recv[1];
-        val = val << 8;
-        std::cout << "MSB: " << int(recv[0]) << " " << int(recv[1]) << std::endl;
-        recv[0] = 0x02;
-        recv[1] = 0x00;
-        wiringPiSPIDataRW (0, recv, 2);
-        val += recv[1];
-        std::cout << "LSB: " << int(recv[0]) << " " << int(recv[1]) << std::endl;
-        std::cout << "value: " << val << std::endl;
-        std::cout << "ratio: " << (double)(val) / 32768 << std::endl;
-        std::cout << "100 plus: " << ((double)(val) / 32768 * 430.0 - 100.0) << std::endl;
-        std::cout << "temp: " << ((double)(val) / 32768 * 430.0 - 100.0) * 10 / 3.9 << std::endl;
-        _currentTemperature = ((double)(val) / 32768 * 430.0 - 100.0) * 10 / 3.9;
+        if (!_simulationMode) {
+            int val;
+            unsigned char recv[50];
+            recv[0] = 0x01;
+            recv[1] = 0x00;
+            wiringPiSPIDataRW (0, recv, 2);
+            val = recv[1];
+            val = val << 8;
+            recv[0] = 0x02;
+            recv[1] = 0x00;
+            wiringPiSPIDataRW (0, recv, 2);
+            val += recv[1];
+            _currentTemperature = ((double)(val) / 32768 * 430.0 - 100.0) * 10 / 3.9;
+        }
         processCommands();
         std::this_thread::sleep_for(std::chrono::milliseconds(1000));
         if (_simulationMode) {
-            //std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-            //_currentTemperature = simval;
-            //simval = simval + _outputPercent * 0.1 - SIM_COOLING;
+            _currentTemperature = simval;
+            simval = simval + _outputPercent.get() * 0.1 - SIM_COOLING;
         }
 
         if (_mode == MODE::AUTO) {
@@ -81,7 +77,7 @@ void ProcessControl::run() {
                         _segmentStartTime = -1;
                     }
             } else if (_segmentStartTime < 0) {
-                if (fabs(_setpoint - _currentTemperature) < 0.5) {
+                if (fabs(_setpoint.get() - _currentTemperature.get()) < 0.5) {
                     _segmentStartTime = std::time(0);
                 }
             }
@@ -92,13 +88,16 @@ void ProcessControl::run() {
             }
         }
         if (_recording) {
-            _recordedTemperature.push_back(_currentTemperature);
-            _recordedSetpoint.push_back(_setpoint);
+            _recordedTemperature.push_back(_currentTemperature.get());
+            _recordedSetpoint.push_back(_setpoint.get());
         }
 
         calculatePIDOutput();
-        //printState();
-        writeXML();
+        _xmlSerializer.serialize();
+        std::system("clear");
+        std::stringstream ss;
+        _xmlSerializer.serialize(ss);
+        std::cout << ss.str() << std::endl;
     }
 }
 
@@ -140,60 +139,14 @@ void ProcessControl::processCommand(std::string message) {
         std::string setpoint_str = "sp: " + std::to_string(_setpoint) + "\n";
         _tcpInterface->sendMessage(setpoint_str); */
     } else if (message.substr(0, 12) == "inc_setpoint"){
-        _setpoint++;
+        _setpoint = _setpoint.get() + 1;
     } else if (message.substr(0, 12) == "dec_setpoint"){
-        _setpoint--;
+        _setpoint = _setpoint.get() - 1;
     }/*  else if (message.substr(0, 9) == "playcurve"){
         playCurve(message.substr(10, message.length()));
     } else if (message.substr(0, 10) == "get_curves"){
         _tcpInterface->sendMessage(_curveStore.getCurveNames() + "\n");
     } */
-}
-
-void ProcessControl::writeXML() {
-    std::ofstream dataxmlfile;
-    dataxmlfile.open ("/var/www/html/data.xml");
-    dataxmlfile << "<?xml version=\"1.0\"?>";
-    dataxmlfile << "<processdata>\n";
-    dataxmlfile << "<temp>" << _currentTemperature << "</temp>\n";
-    dataxmlfile << "<setpoint>" << _setpoint << "</setpoint>\n";
-    dataxmlfile << "<output>" << _outputPercent << "</output>\n";
-    dataxmlfile << "<delta>" << _setpoint - _currentTemperature << "</delta>\n";
-    dataxmlfile << "<mode>";
-    switch(_mode) {
-                      case MODE::MANUAL: dataxmlfile << "MANUAL"; break;
-                      case MODE::AUTO: dataxmlfile << "AUTO"; break;
-                  };
-    dataxmlfile << "</mode>\n";
-    dataxmlfile << "<timetonextsegment>" << _timeToNextSegment << "</timetonextsegment>\n";
-    dataxmlfile << "</processdata>\n";
-    dataxmlfile.close();
-}
-
-void ProcessControl::printState() {
-    std::system("clear");
-    std::cout << "Connection state: \n";
-              /* if (_tcpInterface->_connected) {
-                  std::cout << "Connected" << "\n";
-              } else {
-                  std::cout << "Disconnected" << "\n";
-              } */
-    std::cout << "Current time in seconds: " << std::time(0) << "\n";
-              if (_mode == MODE::AUTO) {
-                  std::cout << "Number of segments:      " << _curveStore.getCurve(_currentCurve)->size() << "\n"
-                            << "Current segment index:   " << _currentSegmentIndex << "\n"
-                            << "Time to next segment:    " << _timeToNextSegment << "\n";
-              }
-    std::cout << "Current temperature:        " << _currentTemperature << "\n"
-              << "Current ouput percentage:   " << _outputPercent << "\n"
-              << "Setpoint:                   " << _setpoint << "\n"
-              << "Delta                       " << _setpoint - _currentTemperature << "\n"
-              << "Current Mode:               ";
-              switch(_mode) {
-                  case MODE::MANUAL: std::cout << "MANUAL\n"; break;
-                  case MODE::AUTO: std::cout << "AUTO\n"; break;
-              };
-              std::cout << "Last command received: " << _lastCommand << std::endl;
 }
 
 void ProcessControl::startRecording() {
@@ -225,10 +178,9 @@ void ProcessControl::stopRecording() {
 }
 
 void ProcessControl::calculatePIDOutput() {
-    if (_setpoint < 20) {
+    if (_setpoint.get() < 20) {
         _outputPercent = 0;
     } else {
-        _outputPercent = std::max(std::min(float(100.0), PROPORTIONAL * (_setpoint - _currentTemperature) / _setpoint * 100), float(0.0));
+        _outputPercent = (int)(std::max(std::min((float)100.0, (float)(PROPORTIONAL * (_setpoint.get() - _currentTemperature.get()) / _setpoint.get() * 100)), float(0.0)));
     }
 }
-
