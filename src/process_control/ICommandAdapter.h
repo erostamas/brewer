@@ -1,6 +1,12 @@
 #pragma once
 
+#include <vector>
+#include <memory>
+
+#include "ICommand.h"
+
 class ICommandAdapter {
 public:
-    Commands getCommands() const = 0;
+    virtual std::vector<std::unique_ptr<ICommand>> getCommands() const = 0;
+    virtual void startCommandReceiver() = 0;
 };

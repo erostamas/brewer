@@ -1,26 +1,33 @@
 #pragma once
 
+#include <memory>
+
 #include "CurveStore.h"
-#include "UdpInterface.h"
 #include "ProcessVariable.h"
 #include "XmlSerializer.h"
+#include "ICommandAdapter.h"
+
+class SetpointCommand;
+class DeltaSetpointCommand;
 
 class ProcessControl {
 public:
     ProcessControl();
     ~ProcessControl();
-	void setSimulationMode(bool simulationMode)           { _simulationMode = simulationMode;         }
+	void setSimulationMode(bool simulationMode) { _simulationMode = simulationMode; }
 
 	void run();
     void playCurve(std::string name);
     void stopCurve();
     void processCommands();
-    void processCommand(std::string message);
     void startRecording();
     void stopRecording();
     void calculatePIDOutput();
+    ProcessVariable<TYPE::DOUBLE>& getSetpoint() { return _setpoint; }
 
 private:
+    friend class SetpointCommand;
+    friend class DeltaSetpointCommand;
     ProcessVariable<TYPE::DOUBLE> _currentTemperature;
     ProcessVariable<TYPE::DOUBLE> _setpoint;
     ProcessVariable<TYPE::INTEGER> _outputPercent;
@@ -36,8 +43,8 @@ private:
     time_t _recordingStartTime;
     bool _recording;
     long _segmentStartTime;
-    UdpInterface _udpInterface;
     std::string _lastCommand;
     XmlSerializer _xmlSerializer;
+    std::unique_ptr<ICommandAdapter> _commandAdapter;
     
 };

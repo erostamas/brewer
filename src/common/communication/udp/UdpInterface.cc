@@ -6,8 +6,10 @@
 #include "Logging.h"
 
 UdpInterface::UdpInterface(unsigned listenPort)
-    : _listenPort(listenPort)
-{
+    : _listenPort(listenPort) {
+}
+
+void UdpInterface::startReceiveThread() {
     _receiveThread = std::thread(&UdpInterface::receiveThread, this);
 }
 
@@ -41,7 +43,6 @@ std::list<const char*> UdpInterface::getMessages() {
     if (_receiver) {
         return _receiver->getMessages();
     } else {
-        _receiveThread = std::thread(&UdpInterface::receiveThread, this);
         std::list<const char*> empty;
         return empty;
     }

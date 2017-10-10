@@ -11,6 +11,7 @@
 #include "ProcessControl.h"
 #include "Common.h"
 #include "Utils.h"
+#include "StringCommandAdapter.h"
 
 #define PROPORTIONAL 1
 #define SIM_COOLING 0.1
@@ -20,8 +21,8 @@ ProcessControl::ProcessControl()
     , _setpoint("setpoint", Accessibility::READWRITE)
     , _outputPercent("output", Accessibility::READWRITE)
     , _mode("mode", Accessibility::READWRITE)
-    , _udpInterface(50001)
-    , _xmlSerializer("/var/www/html/data.xml") {
+    , _xmlSerializer("/var/www/html/data.xml")
+    , _commandAdapter(new StringCommandAdapter()) {
     _mode = MODE::MANUAL;
     _currentSegmentIndex = 0;
 }
@@ -30,6 +31,7 @@ ProcessControl::~ProcessControl() {
 }
 
 void ProcessControl::run() {
+    _commandAdapter->startCommandReceiver();
     if (wiringPiSPISetup (0, 1000000) < 0)
         fprintf (stderr, "SPI Setup failed: %s\n", strerror (errno));
 
@@ -43,7 +45,7 @@ void ProcessControl::run() {
     _segmentStartTime = -1;
     _curveStore.initCurvesFromFile("/brewer_files/brewer_curves.txt");
     _curveStore.saveCurvesToFile("/brewer_files/brewer_curves.txt");
-    while (!stopControlRequested) {
+    while (true) {
         if (!_simulationMode) {
             int val;
             unsigned char recv[50];
@@ -122,31 +124,12 @@ void ProcessControl::stopCurve() {
 }
 
 void ProcessControl::processCommands() {
-    for (auto msg : _udpInterface.getMessages()) {
-        processCommand(std::string(msg));
+    for (const auto& command: _commandAdapter->getCommands()) {
+        command->execute(*this);
     }
-}
-
-void ProcessControl::processCommand(std::string message) {
-    _lastCommand = message;
-     if (message.substr(0, 8) == "setpoint") {
-        // TODO: exception handling
-        _setpoint = stod(message.substr(8));
-    /*} else if (message.substr(0, 15) == "get_temperature"){
-        std::string temp = "temp: " + std::to_string(_currentTemperature) + "\n";
-        _tcpInterface->sendMessage(temp);
-    } else if (message.substr(0, 12) == "get_setpoint"){
-        std::string setpoint_str = "sp: " + std::to_string(_setpoint) + "\n";
-        _tcpInterface->sendMessage(setpoint_str); */
-    } else if (message.substr(0, 12) == "inc_setpoint"){
-        _setpoint = _setpoint.get() + 1;
-    } else if (message.substr(0, 12) == "dec_setpoint"){
-        _setpoint = _setpoint.get() - 1;
-    }/*  else if (message.substr(0, 9) == "playcurve"){
-        playCurve(message.substr(10, message.length()));
-    } else if (message.substr(0, 10) == "get_curves"){
-        _tcpInterface->sendMessage(_curveStore.getCurveNames() + "\n");
-    } */
+    //for (auto msg : _udpInterface->getMessages()) {
+    //    processCommand(std::string(msg));
+    //}
 }
 
 void ProcessControl::startRecording() {

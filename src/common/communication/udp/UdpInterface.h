@@ -3,6 +3,7 @@
 #include <string>
 #include <thread>
 #include <mutex>
+#include <memory>
 
 #include "UdpReceiver.h"
 
@@ -17,6 +18,7 @@ public:
     void sendTo(const std::string& ipAddress
               , unsigned port
               , std::string message);
+    void startReceiveThread();
     void receiveThread();
     std::list<const char*> getMessages();   
 private:
@@ -24,3 +26,5 @@ private:
     std::thread _receiveThread;
     std::unique_ptr<UdpReceiver> _receiver = nullptr;
 };
+
+using UdpInterfacePtr = std::unique_ptr<UdpInterface>;

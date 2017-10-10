@@ -7,8 +7,6 @@
 #include "Logging.h"
 #include "ProcessControl.h"
 
-bool stopControlRequested = false;
-
 void signalHandler( int signum ) {
     LOG_INFO << "Interrupt signal received, terminating...\n";
     unlink("/var/run/brewer/brewer_socket_file");

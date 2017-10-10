@@ -5,6 +5,7 @@ add_library(brewer_library STATIC
     ProcessVariableBase.cc
     ProcessVariableStore.cc
     XmlSerializer.cc
+    StringCommandAdapter.cc
 )
 
 target_link_libraries(brewer_library

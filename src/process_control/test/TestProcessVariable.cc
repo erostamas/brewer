@@ -15,9 +15,3 @@ TEST(TestProcessVariable, test_string_assignment) {
     x = "value";
     EXPECT_TRUE(x == "value");
 }
-
-TEST(TestProcessVariable, test_double_assignment_readonly) {
-    ProcessVariable<TYPE::DOUBLE> x("varname", Accessibility::READONLY);
-    x = 5.5;
-    EXPECT_TRUE(x == 0.0);
-}
