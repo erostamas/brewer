@@ -51,14 +51,21 @@ void ProcessControl::run() {
             unsigned char recv[50];
             recv[0] = 0x01;
             recv[1] = 0x00;
+            std::this_thread::sleep_for(std::chrono::milliseconds(500));
             wiringPiSPIDataRW (0, recv, 2);
             val = recv[1];
+            std::cout << "address 01h: " << int(recv[1]) << std::endl;
             val = val << 8;
             recv[0] = 0x02;
             recv[1] = 0x00;
+            std::this_thread::sleep_for(std::chrono::milliseconds(500));
             wiringPiSPIDataRW (0, recv, 2);
+            std::cout << "address 02h: " << int(recv[1]) << std::endl;
             val += recv[1];
-            _currentTemperature = ((double)(val) / 32768 * 430.0 - 100.0) * 10 / 3.9;
+            std::cout << "val: " << val << std::endl;
+            //val = val >> 1;
+            _currentTemperature = (double)(val) / 32768 * 430.0;
+            //_currentTemperature = ((double)(val) / 32768 * 430.0 - 100.0) * 10 / 3.9;
         }
         processCommands();
         std::this_thread::sleep_for(std::chrono::milliseconds(1000));
@@ -127,9 +134,6 @@ void ProcessControl::processCommands() {
     for (const auto& command: _commandAdapter->getCommands()) {
         command->execute(*this);
     }
-    //for (auto msg : _udpInterface->getMessages()) {
-    //    processCommand(std::string(msg));
-    //}
 }
 
 void ProcessControl::startRecording() {

@@ -11,7 +11,7 @@ public:
     }
 
     virtual void execute(ProcessControl& processControl) override {
-        processControl.getSetpoint() = _setpoint;
+        processControl._setpoint = _setpoint;
     }
 
 private:
