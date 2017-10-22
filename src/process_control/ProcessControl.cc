@@ -32,47 +32,20 @@ ProcessControl::~ProcessControl() {
 
 void ProcessControl::run() {
     _commandAdapter->startCommandReceiver();
-    if (wiringPiSPISetup (0, 1000000) < 0)
-        fprintf (stderr, "SPI Setup failed: %s\n", strerror (errno));
-
-    unsigned char msg[] = {0x80, 0xD0};
-    wiringPiSPIDataRW (0, msg, 2);
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-    msg[0] = 0x00;
-    msg[1] = 0x00;
-    wiringPiSPIDataRW (0, msg, 2);
+    initSPI();
+    configureMax31865();
     float simval = 0.0;
     _segmentStartTime = -1;
     _curveStore.initCurvesFromFile("/brewer_files/brewer_curves.txt");
     _curveStore.saveCurvesToFile("/brewer_files/brewer_curves.txt");
     while (true) {
         if (!_simulationMode) {
-            int val;
-            unsigned char recv[50];
-            recv[0] = 0x01;
-            recv[1] = 0x00;
-            std::this_thread::sleep_for(std::chrono::milliseconds(500));
-            wiringPiSPIDataRW (0, recv, 2);
-            val = recv[1];
-            std::cout << "address 01h: " << int(recv[1]) << std::endl;
-            val = val << 8;
-            recv[0] = 0x02;
-            recv[1] = 0x00;
-            std::this_thread::sleep_for(std::chrono::milliseconds(500));
-            wiringPiSPIDataRW (0, recv, 2);
-            std::cout << "address 02h: " << int(recv[1]) << std::endl;
-            val += recv[1];
-            std::cout << "val: " << val << std::endl;
-            //val = val >> 1;
-            _currentTemperature = (double)(val) / 32768 * 430.0;
-            //_currentTemperature = ((double)(val) / 32768 * 430.0 - 100.0) * 10 / 3.9;
-        }
-        processCommands();
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-        if (_simulationMode) {
+            readTemperature();
+        } else {
             _currentTemperature = simval;
             simval = simval + _outputPercent.get() * 0.1 - SIM_COOLING;
         }
+        processCommands();
 
         if (_mode == MODE::AUTO) {
             std::cout << "current segment duration: " << _currentSegment->getDuration() << std::endl;
@@ -108,6 +81,39 @@ void ProcessControl::run() {
         _xmlSerializer.serialize(ss);
         std::cout << ss.str() << std::endl;
     }
+}
+
+void initSPI() const {
+    if (wiringPiSPISetup (0, 1000000) < 0) {
+        LOG_ERROR << "SPI Setup failed: %s\n", strerror (errno));
+    }
+}
+
+void configureMax31865() const {
+    unsigned char msg[] = {0x80, 0xD0};
+    wiringPiSPIDataRW (0, msg, 2);
+}
+
+void readTemperature() {
+    int val;
+    unsigned char recv[50];
+    recv[0] = 0x01;
+    recv[1] = 0x00;
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    wiringPiSPIDataRW (0, recv, 2);
+    val = recv[1];
+    std::cout << "address 01h: " << int(recv[1]) << std::endl;
+    val = val << 8;
+    recv[0] = 0x02;
+    recv[1] = 0x00;
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    wiringPiSPIDataRW (0, recv, 2);
+    std::cout << "address 02h: " << int(recv[1]) << std::endl;
+    val += recv[1];
+    std::cout << "val: " << val << std::endl;
+    //val = val >> 1;
+    _currentTemperature = (double)(val) / 32768 * 430.0;
+    //_currentTemperature = ((double)(val) / 32768 * 430.0 - 100.0) * 10 / 3.9;
 }
 
 void ProcessControl::playCurve(std::string name) {

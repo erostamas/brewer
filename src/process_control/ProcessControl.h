@@ -23,6 +23,9 @@ public:
     void startRecording();
     void stopRecording();
     void calculatePIDOutput();
+    void initSPI() const;
+    void configureMax31865() const;
+    void readTemperature();
     ProcessVariable<TYPE::DOUBLE>& getSetpoint() { return _setpoint; }
 
 private:
