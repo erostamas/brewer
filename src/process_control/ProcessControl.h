@@ -32,6 +32,7 @@ private:
     friend class SetpointCommand;
     friend class DeltaSetpointCommand;
     ProcessVariable<TYPE::DOUBLE> _currentTemperature;
+    ProcessVariable<TYPE::DOUBLE> _resistance;
     ProcessVariable<TYPE::DOUBLE> _setpoint;
     ProcessVariable<TYPE::INTEGER> _outputPercent;
     ProcessVariable<TYPE::MODE> _mode;

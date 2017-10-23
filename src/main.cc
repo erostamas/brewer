@@ -2,6 +2,7 @@
 #include <thread>
 #include <cstdlib>
 #include <csignal>
+#include "boost/program_options.hpp"
 
 #include "Common.h"
 #include "Logging.h"
@@ -13,14 +14,35 @@ void signalHandler( int signum ) {
     exit(0);
 }
 
-int main(void) {
+int main(int argc, char** argv) {
+    namespace po = boost::program_options;
+    po::options_description desc("Options");
+    desc.add_options()
+      ("simulation", "Simulate temperature measurement");
+
+    po::variables_map vm;
+    try
+    {
+      po::store(po::parse_command_line(argc, argv, desc),
+                vm);
+    }
+    catch(po::error& e)
+    {
+      std::cerr << "ERROR: " << e.what() << std::endl << std::endl;
+      std::cerr << desc << std::endl;
+      return 1;
+    }
     init_logging();
     signal(SIGINT, signalHandler);
     signal(SIGTERM, signalHandler);
 
     ProcessControl processcontrol;
+    if ( vm.count("simulation")  )
+      {
+        LOG_INFO << "Running in simulation mode";
+        processcontrol.setSimulationMode(true);
+      }
 
-    processcontrol.setSimulationMode(true);
     try {
         processcontrol.run();
     } catch (const NormalShutdown& e) {

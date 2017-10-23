@@ -12,12 +12,14 @@
 #include "Common.h"
 #include "Utils.h"
 #include "StringCommandAdapter.h"
+#include "Logging.h"
 
 #define PROPORTIONAL 1
 #define SIM_COOLING 0.1
 
 ProcessControl::ProcessControl()
     : _currentTemperature("temp", Accessibility::READWRITE)
+    , _resistance("resistance", Accessibility::READWRITE)
     , _setpoint("setpoint", Accessibility::READWRITE)
     , _outputPercent("output", Accessibility::READWRITE)
     , _mode("mode", Accessibility::READWRITE)
@@ -44,6 +46,7 @@ void ProcessControl::run() {
         } else {
             _currentTemperature = simval;
             simval = simval + _outputPercent.get() * 0.1 - SIM_COOLING;
+            std::this_thread::sleep_for(std::chrono::milliseconds(500));
         }
         processCommands();
 
@@ -83,18 +86,18 @@ void ProcessControl::run() {
     }
 }
 
-void initSPI() const {
+void ProcessControl::initSPI() const {
     if (wiringPiSPISetup (0, 1000000) < 0) {
-        LOG_ERROR << "SPI Setup failed: %s\n", strerror (errno));
+        LOG_ERROR << "SPI Setup failed: %s\n", strerror (errno);
     }
 }
 
-void configureMax31865() const {
+void ProcessControl::configureMax31865() const {
     unsigned char msg[] = {0x80, 0xD0};
     wiringPiSPIDataRW (0, msg, 2);
 }
 
-void readTemperature() {
+void ProcessControl::readTemperature() {
     int val;
     unsigned char recv[50];
     recv[0] = 0x01;
@@ -111,9 +114,8 @@ void readTemperature() {
     std::cout << "address 02h: " << int(recv[1]) << std::endl;
     val += recv[1];
     std::cout << "val: " << val << std::endl;
-    //val = val >> 1;
-    _currentTemperature = (double)(val) / 32768 * 430.0;
-    //_currentTemperature = ((double)(val) / 32768 * 430.0 - 100.0) * 10 / 3.9;
+    _resistance = (double)(val) / 32768 * 430.0;
+    _currentTemperature = ((_resistance.get() / 100) - 1) / 0.00385;
 }
 
 void ProcessControl::playCurve(std::string name) {
