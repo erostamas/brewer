@@ -6,13 +6,14 @@
 #include "ProcessVariable.h"
 #include "XmlSerializer.h"
 #include "ICommandAdapter.h"
+#include "System.h"
 
 class SetpointCommand;
 class DeltaSetpointCommand;
 
 class ProcessControl {
 public:
-    ProcessControl();
+    ProcessControl(SystemPtr system = nullptr);
     ~ProcessControl();
 	void setSimulationMode(bool simulationMode) { _simulationMode = simulationMode; }
 
@@ -31,6 +32,7 @@ public:
 private:
     friend class SetpointCommand;
     friend class DeltaSetpointCommand;
+    SystemPtr _system;
     ProcessVariable<TYPE::DOUBLE> _currentTemperature;
     ProcessVariable<TYPE::DOUBLE> _resistance;
     ProcessVariable<TYPE::DOUBLE> _setpoint;

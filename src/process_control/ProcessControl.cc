@@ -17,8 +17,9 @@
 #define PROPORTIONAL 1
 #define SIM_COOLING 0.1
 
-ProcessControl::ProcessControl()
-    : _currentTemperature("temp", Accessibility::READWRITE)
+ProcessControl::ProcessControl(SystemPtr system)
+    : _system(system == nullptr ? std::make_shared<System>() : system)
+    , _currentTemperature("temp", Accessibility::READWRITE)
     , _resistance("resistance", Accessibility::READWRITE)
     , _setpoint("setpoint", Accessibility::READWRITE)
     , _outputPercent("output", Accessibility::READWRITE)
