@@ -2,11 +2,24 @@
 #include <iomanip>
 
 #include "Segment.h"
+#include "Common.h"
+#include "Utils.h"
 
-Segment::Segment() {
-}
-
-Segment::Segment(double setpoint, unsigned long duration) : _setpoint(setpoint), _duration(duration) {
+Segment::Segment(const std::string& segmentString) {
+    std::vector<std::string> values = Utils::split(segmentString, ':');
+    if (values.size() != 2) {
+        throw CurveParseError("[Segment] Malformed segment: " + segmentString);
+    }
+    try {
+        _setpoint = std::stod(values[0]);
+    } catch (...) {
+        throw SegmentParseError("[Segment] Failed to parse setpoint: " + values[0]);
+    }
+    try {
+        _duration = std::stoul(values[1]);
+    } catch (...) {
+        throw SegmentParseError("[Segment] Failed to parse duration: " + values[1]);
+    }
 }
 
 double Segment::getSetpoint() {
@@ -15,14 +28,6 @@ double Segment::getSetpoint() {
 
 unsigned long Segment::getDuration() {
     return _duration;
-}
-
-void Segment::setSetpoint(double setpoint) {
-    _setpoint = setpoint;
-}
-
-void Segment::setDuration(unsigned long duration) {
-    _duration = duration;
 }
 
 std::string Segment::toString() {

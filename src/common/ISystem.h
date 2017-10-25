@@ -2,9 +2,7 @@
 
 #include <memory>
 
-using MicroSeconds = uint64_t;
-using MilliSeconds = uint64_t;
-using Seconds = uint64_t;
+#include "Common.h"
 
 class ISystem {
 public:

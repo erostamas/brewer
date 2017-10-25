@@ -1,6 +1,5 @@
 add_library(brewer_library STATIC
     ProcessControl.cc
-    CurveStore.cc
     Segment.cc
     ProcessVariableBase.cc
     ProcessVariableStore.cc

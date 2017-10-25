@@ -39,8 +39,6 @@ void ProcessControl::run() {
     configureMax31865();
     float simval = 0.0;
     _segmentStartTime = -1;
-    _curveStore.initCurvesFromFile("/brewer_files/brewer_curves.txt");
-    _curveStore.saveCurvesToFile("/brewer_files/brewer_curves.txt");
     while (true) {
         if (!_simulationMode) {
             readTemperature();
@@ -52,26 +50,26 @@ void ProcessControl::run() {
         processCommands();
 
         if (_mode == MODE::AUTO) {
-            std::cout << "current segment duration: " << _currentSegment->getDuration() << std::endl;
-            if ((_segmentStartTime > 0) && ((unsigned)(std::time(0) - _segmentStartTime) >= _currentSegment->getDuration())) {
-                    if (_currentSegmentIndex == _curveStore.getCurve(_currentCurve)->size() - 1) {
-                        _segmentStartTime = -1;
-                        stopCurve();
-                    } else {
-                        _currentSegment = _curveStore.getCurve(_currentCurve)->at(++_currentSegmentIndex);
-                        _setpoint = _currentSegment->getSetpoint();
-                        _segmentStartTime = -1;
-                    }
-            } else if (_segmentStartTime < 0) {
-                if (fabs(_setpoint.get() - _currentTemperature.get()) < 0.5) {
-                    _segmentStartTime = std::time(0);
-                }
-            }
-            if (_segmentStartTime > 0) {
-                _timeToNextSegment = _currentSegment->getDuration() - (std::time(0) - _segmentStartTime);
-            } else {
-                _timeToNextSegment = _currentSegment->getDuration();
-            }
+            //std::cout << "current segment duration: " << _currentSegment->getDuration() << std::endl;
+            //if ((_segmentStartTime > 0) && ((unsigned)(std::time(0) - _segmentStartTime) >= _currentSegment->getDuration())) {
+            //        if (_currentSegmentIndex == _curveStore.getCurve(_currentCurve)->size() - 1) {
+            //            _segmentStartTime = -1;
+            //            stopCurve();
+            //        } else {
+            //            _currentSegment = _curveStore.getCurve(_currentCurve)->at(++_currentSegmentIndex);
+            //            _setpoint = _currentSegment->getSetpoint();
+            //            _segmentStartTime = -1;
+            //        }
+            //} else if (_segmentStartTime < 0) {
+            //    if (fabs(_setpoint.get() - _currentTemperature.get()) < 0.5) {
+            //        _segmentStartTime = std::time(0);
+            //    }
+            //}
+            //if (_segmentStartTime > 0) {
+            //    _timeToNextSegment = _currentSegment->getDuration() - (std::time(0) - _segmentStartTime);
+            //} else {
+            //    _timeToNextSegment = _currentSegment->getDuration();
+            //}
         }
         if (_recording) {
             _recordedTemperature.push_back(_currentTemperature.get());
@@ -120,7 +118,7 @@ void ProcessControl::readTemperature() {
 }
 
 void ProcessControl::playCurve(std::string name) {
-    CurvePtr curve = _curveStore.getCurve(name);
+    /* CurvePtr curve = _curveStore.getCurve(name);
     if (curve->size()) {
         _currentCurve = name;
         _currentSegment = curve->at(0);
@@ -128,7 +126,7 @@ void ProcessControl::playCurve(std::string name) {
         std::cout << "setpoint set to: " << _setpoint << std::endl;
         _mode = MODE::AUTO;
         startRecording();
-    }
+    } */
 }
 
 void ProcessControl::stopCurve() {

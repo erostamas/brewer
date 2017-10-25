@@ -2,24 +2,20 @@
 
 #include <string>
 #include <memory>
-#include <vector>
-#include <map>
+
+#include "Common.h"
 
 class Segment {
 public:
-    Segment();
-    Segment(double setpoint, unsigned long duration);
+    Segment(const std::string& segmentString);
+
     double getSetpoint();
     unsigned long getDuration();
-    void setSetpoint(double setpoint);
-    void setDuration(unsigned long duration);
     std::string toString();
+
 private:
     double _setpoint = 0.0;
-    unsigned long _duration = 0.0;
+    Seconds _duration = 0.0;
 };
 
-typedef std::shared_ptr<Segment> SegmentPtr;
-typedef std::vector<SegmentPtr> Curve;
-typedef std::shared_ptr<Curve> CurvePtr;
-typedef std::map<std::string, CurvePtr> Curves;
+typedef std::unique_ptr<Segment> SegmentPtr;

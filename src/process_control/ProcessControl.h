@@ -2,7 +2,6 @@
 
 #include <memory>
 
-#include "CurveStore.h"
 #include "ProcessVariable.h"
 #include "XmlSerializer.h"
 #include "ICommandAdapter.h"
@@ -39,10 +38,8 @@ private:
     ProcessVariable<TYPE::INTEGER> _outputPercent;
     ProcessVariable<TYPE::MODE> _mode;
     bool _simulationMode;
-    CurveStore _curveStore;
     std::string _currentCurve;
     unsigned int _currentSegmentIndex;
-    SegmentPtr _currentSegment;
     unsigned long _timeToNextSegment;
     std::vector<float> _recordedTemperature;
     std::vector<float> _recordedSetpoint;
