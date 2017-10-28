@@ -24,10 +24,10 @@ ProcessControl::ProcessControl(SystemPtr system)
     , _setpoint("setpoint", Accessibility::READWRITE)
     , _outputPercent("output", Accessibility::READWRITE)
     , _mode("mode", Accessibility::READWRITE)
+    , _timeToNextSegment("time_to_next_segment", Accessibility::READWRITE)
     , _xmlSerializer("/var/www/html/data.xml")
     , _commandAdapter(new StringCommandAdapter()) {
     _mode = MODE::MANUAL;
-    _currentSegmentIndex = 0;
 }
 
 ProcessControl::~ProcessControl() {
@@ -38,7 +38,6 @@ void ProcessControl::run() {
     initSPI();
     configureMax31865();
     float simval = 0.0;
-    _segmentStartTime = -1;
     while (true) {
         if (!_simulationMode) {
             readTemperature();
@@ -50,26 +49,13 @@ void ProcessControl::run() {
         processCommands();
 
         if (_mode == MODE::AUTO) {
-            //std::cout << "current segment duration: " << _currentSegment->getDuration() << std::endl;
-            //if ((_segmentStartTime > 0) && ((unsigned)(std::time(0) - _segmentStartTime) >= _currentSegment->getDuration())) {
-            //        if (_currentSegmentIndex == _curveStore.getCurve(_currentCurve)->size() - 1) {
-            //            _segmentStartTime = -1;
-            //            stopCurve();
-            //        } else {
-            //            _currentSegment = _curveStore.getCurve(_currentCurve)->at(++_currentSegmentIndex);
-            //            _setpoint = _currentSegment->getSetpoint();
-            //            _segmentStartTime = -1;
-            //        }
-            //} else if (_segmentStartTime < 0) {
-            //    if (fabs(_setpoint.get() - _currentTemperature.get()) < 0.5) {
-            //        _segmentStartTime = std::time(0);
-            //    }
-            //}
-            //if (_segmentStartTime > 0) {
-            //    _timeToNextSegment = _currentSegment->getDuration() - (std::time(0) - _segmentStartTime);
-            //} else {
-            //    _timeToNextSegment = _currentSegment->getDuration();
-            //}
+            if (_curvePlayer.getState() == CurvePlayerState::IDLE) {
+                _mode = MODE::MANUAL;
+            } else {
+                _curvePlayer.step();
+                _setpoint = _curvePlayer.getCurrentSetpoint();
+                _timeToNextSegment = _curvePlayer.getTimeToNextSegment();
+            }
         }
         if (_recording) {
             _recordedTemperature.push_back(_currentTemperature.get());
@@ -129,14 +115,6 @@ void ProcessControl::playCurve(std::string name) {
     } */
 }
 
-void ProcessControl::stopCurve() {
-    _mode = MODE::MANUAL;
-    _setpoint = 0;
-    _currentSegmentIndex = 0;
-    _segmentStartTime = -1;
-    stopRecording();
-}
-
 void ProcessControl::processCommands() {
     for (const auto& command: _commandAdapter->getCommands()) {
         command->execute(*this);
@@ -144,12 +122,12 @@ void ProcessControl::processCommands() {
 }
 
 void ProcessControl::startRecording() {
-    _recordingStartTime = std::time(0);
-    _recording = true;
+    /* _recordingStartTime = std::time(0);
+    _recording = true; */
 }
 
 void ProcessControl::stopRecording() {
-    _recording = false;
+    /* _recording = false;
     std::ofstream historyfile;
     historyfile.open ("/brewer_files/history/" + _currentCurve + "_" + std::to_string(_recordingStartTime) + ".txt");
     for (unsigned i = 0; i < _recordedTemperature.size(); i++) {
@@ -168,7 +146,7 @@ void ProcessControl::stopRecording() {
         }
     }
     _recordedTemperature.clear();
-    _recordedSetpoint.clear();
+    _recordedSetpoint.clear(); */
 }
 
 void ProcessControl::calculatePIDOutput() {

@@ -1,6 +1,8 @@
 add_library(brewer_library STATIC
     ProcessControl.cc
     Segment.cc
+    Curve.cc
+    CurvePlayer.cc
     ProcessVariableBase.cc
     ProcessVariableStore.cc
     XmlSerializer.cc

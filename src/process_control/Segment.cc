@@ -4,11 +4,12 @@
 #include "Segment.h"
 #include "Common.h"
 #include "Utils.h"
+#include "Exceptions.h"
 
 Segment::Segment(const std::string& segmentString) {
     std::vector<std::string> values = Utils::split(segmentString, ':');
     if (values.size() != 2) {
-        throw CurveParseError("[Segment] Malformed segment: " + segmentString);
+        throw SegmentParseError("[Segment] Malformed segment: " + segmentString);
     }
     try {
         _setpoint = std::stod(values[0]);
@@ -22,15 +23,15 @@ Segment::Segment(const std::string& segmentString) {
     }
 }
 
-double Segment::getSetpoint() {
+double Segment::getSetpoint() const {
     return _setpoint;
 }
 
-unsigned long Segment::getDuration() {
+unsigned long Segment::getDuration() const {
     return _duration;
 }
 
-std::string Segment::toString() {
+std::string Segment::toString() const {
     std::stringstream ss;
     ss << std::fixed << std::setprecision(2) << _setpoint << ":" << _duration;
     return ss.str();

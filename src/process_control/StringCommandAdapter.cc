@@ -3,6 +3,9 @@
 #include "SetpointCommand.h"
 #include "DeltaSetpointCommand.h"
 #include "ShutdownCommand.h"
+#include "PlayCurveCommand.h"
+#include "Logging.h"
+#include "Utils.h"
 
 StringCommandAdapter::StringCommandAdapter()
 : _udpInterface(new UdpInterface(50001)) {
@@ -24,9 +27,19 @@ std::vector<std::unique_ptr<ICommand>> StringCommandAdapter::getCommands() const
                 ret.emplace_back(new DeltaSetpointCommand(-1));
             } else if (commandString == "shutdown"){
                 ret.emplace_back(new ShutdownCommand());
-            } /*else if (message.substr(0, 9) == "playcurve"){
-                playCurve(message.substr(10, message.length()));
-            }*/
+            } else if (commandString.substr(0, 9) == "playcurve"){
+                try {
+                    std::vector<std::string> tokens = Utils::split(commandString.substr(10, commandString.length()), ' ');
+                    if (tokens.size() == 2) {
+                        CurvePtr curve = std::make_shared<Curve>(tokens[0], tokens[1]);
+                        ret.emplace_back(new PlayCurveCommand(curve));
+                    } else {
+                        LOG_ERROR << "[StringCommandAdapter] Failed to parse playcurve command: " << commandString.substr(10, commandString.length());
+                    }
+                } catch (std::exception e) {
+                    LOG_ERROR << "[StringCommandAdapter] Failed to parse playcurve command - " << e.what();
+                }
+            }
     }
     return ret;
 }

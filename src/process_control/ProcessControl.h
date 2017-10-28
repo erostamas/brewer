@@ -6,9 +6,11 @@
 #include "XmlSerializer.h"
 #include "ICommandAdapter.h"
 #include "System.h"
+#include "CurvePlayer.h"
 
 class SetpointCommand;
 class DeltaSetpointCommand;
+class PlayCurveCommand;
 
 class ProcessControl {
 public:
@@ -31,23 +33,21 @@ public:
 private:
     friend class SetpointCommand;
     friend class DeltaSetpointCommand;
+    friend class PlayCurveCommand;
     SystemPtr _system;
     ProcessVariable<TYPE::DOUBLE> _currentTemperature;
     ProcessVariable<TYPE::DOUBLE> _resistance;
     ProcessVariable<TYPE::DOUBLE> _setpoint;
     ProcessVariable<TYPE::INTEGER> _outputPercent;
     ProcessVariable<TYPE::MODE> _mode;
+    ProcessVariable<TYPE::INTEGER> _timeToNextSegment;
     bool _simulationMode;
-    std::string _currentCurve;
-    unsigned int _currentSegmentIndex;
-    unsigned long _timeToNextSegment;
     std::vector<float> _recordedTemperature;
     std::vector<float> _recordedSetpoint;
     time_t _recordingStartTime;
     bool _recording;
-    long _segmentStartTime;
-    std::string _lastCommand;
     XmlSerializer _xmlSerializer;
     std::unique_ptr<ICommandAdapter> _commandAdapter;
+    CurvePlayer _curvePlayer;
     
 };

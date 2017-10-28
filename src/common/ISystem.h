@@ -6,7 +6,7 @@
 
 class ISystem {
 public:
-    virtual MilliSeconds getTsNow() const = 0;
+    virtual Seconds getTsNow() const = 0;
 };
 
 using SystemPtr = std::shared_ptr<ISystem>;

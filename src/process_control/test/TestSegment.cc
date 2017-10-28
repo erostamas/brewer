@@ -1,6 +1,7 @@
 #include <gmock/gmock.h>
 
 #include "Segment.h"
+#include "Exceptions.h"
 
 TEST(TestSegment, test_segment_valid_1) {
     Segment s("12.3:55");
@@ -14,6 +15,18 @@ TEST(TestSegment, test_segment_valid_2) {
     EXPECT_EQ(s.getSetpoint(), 12);
     EXPECT_EQ(s.getDuration(), 55);
     EXPECT_EQ("12.00:55", s.toString());
+}
+
+TEST(TestSegment, test_segment_invalid_segment) {
+    EXPECT_THROW(Segment s("blabla"), SegmentParseError);
+}
+
+TEST(TestSegment, test_segment_invalid_segment_2) {
+    EXPECT_THROW(Segment s(":"), SegmentParseError);
+}
+
+TEST(TestSegment, test_segment_invalid_segment_3) {
+    EXPECT_THROW(Segment s("12:"), SegmentParseError);
 }
 
 TEST(TestSegment, test_segment_invalid_setpoint) {

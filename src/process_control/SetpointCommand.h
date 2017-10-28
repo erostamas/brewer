@@ -11,6 +11,8 @@ public:
     }
 
     virtual void execute(ProcessControl& processControl) override {
+        processControl._mode = MODE::MANUAL;
+        processControl._curvePlayer.stop();
         processControl._setpoint = _setpoint;
     }
 

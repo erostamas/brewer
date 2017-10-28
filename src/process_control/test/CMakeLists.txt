@@ -5,6 +5,8 @@ add_executable(test_process_control
     TestXmlSerializer.cc
     TestCommands.cc
     TestSegment.cc
+    TestCurve.cc
+    TestCurvePlayer.cc
 )
 
 target_link_libraries(test_process_control

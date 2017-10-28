@@ -9,13 +9,13 @@ class Segment {
 public:
     Segment(const std::string& segmentString);
 
-    double getSetpoint();
-    unsigned long getDuration();
-    std::string toString();
+    double getSetpoint()const ;
+    unsigned long getDuration() const;
+    std::string toString() const;
 
 private:
     double _setpoint = 0.0;
     Seconds _duration = 0.0;
 };
 
-typedef std::unique_ptr<Segment> SegmentPtr;
+typedef std::shared_ptr<Segment> SegmentPtr;
