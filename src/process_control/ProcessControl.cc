@@ -25,6 +25,7 @@ ProcessControl::ProcessControl(SystemPtr system)
     , _outputPercent("output", Accessibility::READWRITE)
     , _mode("mode", Accessibility::READWRITE)
     , _timeToNextSegment("time_to_next_segment", Accessibility::READWRITE)
+    , _currentCurve("current_curve", Accessibility::READWRITE)
     , _xmlSerializer("/var/www/html/data.xml")
     , _commandAdapter(new StringCommandAdapter()) {
     _mode = MODE::MANUAL;
@@ -43,7 +44,7 @@ void ProcessControl::run() {
             readTemperature();
         } else {
             _currentTemperature = simval;
-            simval = simval + _outputPercent.get() * 0.1 - SIM_COOLING;
+            simval = std::min(std::max(simval + _outputPercent.get() * 0.1 - SIM_COOLING, 15.0), 100.0);
             std::this_thread::sleep_for(std::chrono::milliseconds(500));
         }
         processCommands();
@@ -51,10 +52,12 @@ void ProcessControl::run() {
         if (_mode == MODE::AUTO) {
             if (_curvePlayer.getState() == CurvePlayerState::IDLE) {
                 _mode = MODE::MANUAL;
+                _currentCurve = "";
             } else {
                 _curvePlayer.step();
                 _setpoint = _curvePlayer.getCurrentSetpoint();
                 _timeToNextSegment = _curvePlayer.getTimeToNextSegment();
+                _currentCurve = _curvePlayer.getCurrentCurveName();
             }
         }
         if (_recording) {
@@ -116,7 +119,9 @@ void ProcessControl::playCurve(std::string name) {
 }
 
 void ProcessControl::processCommands() {
+    LOG_DEBUG << "Processing commands\n";
     for (const auto& command: _commandAdapter->getCommands()) {
+        LOG_DEBUG << "Processing command\n";
         command->execute(*this);
     }
 }

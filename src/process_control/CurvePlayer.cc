@@ -14,6 +14,7 @@ void CurvePlayer::playCurve(CurvePtr curve) {
     _currentSegment = _curve->getSegment(_currentSegmentIndex);
     _currentSetpoint = _currentSegment->getSetpoint();
     _nextStep = _system->getTsNow() + _currentSegment->getDuration();
+    _currentCurveName = curve->getName();
 }
 
 void CurvePlayer::step() {

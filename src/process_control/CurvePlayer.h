@@ -17,6 +17,7 @@ public:
     double getCurrentSetpoint() const { return _currentSetpoint; }
     CurvePlayerState getState() const { return _state;           }
     Seconds getTimeToNextSegment() const { return _timeToNextSegment; }
+    std::string getCurrentCurveName() const { return _currentCurveName; }
     void playCurve(CurvePtr curve);
     void step();
     void stop();
@@ -31,4 +32,5 @@ private:
     MilliSeconds _nextStep;
     double _currentSetpoint;
     Seconds _timeToNextSegment;
+    std::string _currentCurveName;
 };

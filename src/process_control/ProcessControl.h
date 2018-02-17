@@ -28,7 +28,7 @@ public:
     void initSPI() const;
     void configureMax31865() const;
     void readTemperature();
-    ProcessVariable<TYPE::DOUBLE>& getSetpoint() { return _setpoint; }
+    ProcessVariable<TYPE::INTEGER>& getSetpoint() { return _setpoint; }
 
 private:
     friend class SetpointCommand;
@@ -37,10 +37,11 @@ private:
     SystemPtr _system;
     ProcessVariable<TYPE::DOUBLE> _currentTemperature;
     ProcessVariable<TYPE::DOUBLE> _resistance;
-    ProcessVariable<TYPE::DOUBLE> _setpoint;
+    ProcessVariable<TYPE::INTEGER> _setpoint;
     ProcessVariable<TYPE::INTEGER> _outputPercent;
     ProcessVariable<TYPE::MODE> _mode;
     ProcessVariable<TYPE::INTEGER> _timeToNextSegment;
+    ProcessVariable<TYPE::STRING> _currentCurve;
     bool _simulationMode;
     std::vector<float> _recordedTemperature;
     std::vector<float> _recordedSetpoint;
