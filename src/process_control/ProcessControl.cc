@@ -25,6 +25,7 @@ ProcessControl::ProcessControl(SystemPtr system)
     , _outputPercent("output", Accessibility::READWRITE)
     , _mode("mode", Accessibility::READWRITE)
     , _timeToNextSegment("time_to_next_segment", Accessibility::READWRITE)
+    , _timeLeftOverall("time_left_overall", Accessibility::READWRITE)
     , _currentCurve("current_curve", Accessibility::READWRITE)
     , _xmlSerializer("/var/www/html/data.xml")
     , _commandAdapter(new StringCommandAdapter()) {
@@ -57,6 +58,7 @@ void ProcessControl::run() {
                 _curvePlayer.step();
                 _setpoint = _curvePlayer.getCurrentSetpoint();
                 _timeToNextSegment = _curvePlayer.getTimeToNextSegment();
+                _timeLeftOverall = _curvePlayer.getTimeLeftOverall();
                 _currentCurve = _curvePlayer.getCurrentCurveName();
             }
         }
@@ -67,10 +69,10 @@ void ProcessControl::run() {
 
         calculatePIDOutput();
         _xmlSerializer.serialize();
-        std::system("clear");
-        std::stringstream ss;
-        _xmlSerializer.serialize(ss);
-        std::cout << ss.str() << std::endl;
+        //std::system("clear");
+        //std::stringstream ss;
+        //_xmlSerializer.serialize(ss);
+        //std::cout << ss.str() << std::endl;
     }
 }
 

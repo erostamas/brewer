@@ -41,6 +41,7 @@ private:
     ProcessVariable<TYPE::INTEGER> _outputPercent;
     ProcessVariable<TYPE::MODE> _mode;
     ProcessVariable<TYPE::INTEGER> _timeToNextSegment;
+    ProcessVariable<TYPE::INTEGER> _timeLeftOverall;
     ProcessVariable<TYPE::STRING> _currentCurve;
     bool _simulationMode;
     std::vector<float> _recordedTemperature;

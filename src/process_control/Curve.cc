@@ -15,7 +15,9 @@ void Curve::parseSegments(const std::string& curveString) {
         throw CurveParseError("[Curve] Failed parsing curve from string: " + curveString);
     }
     for (auto&& segmentString : segmentStrings) {
-        _segments.emplace_back(new Segment(segmentString));
+        SegmentPtr newSegment = std::make_shared<Segment>(segmentString);
+        _duration += newSegment->getDuration();
+        _segments.push_back(newSegment);
     }
 }
 

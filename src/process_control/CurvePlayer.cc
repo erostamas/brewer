@@ -14,6 +14,7 @@ void CurvePlayer::playCurve(CurvePtr curve) {
     _currentSegment = _curve->getSegment(_currentSegmentIndex);
     _currentSetpoint = _currentSegment->getSetpoint();
     _nextStep = _system->getTsNow() + _currentSegment->getDuration();
+    _endTime = _system->getTsNow() + _curve->getDuration();
     _currentCurveName = curve->getName();
 }
 
@@ -21,7 +22,7 @@ void CurvePlayer::step() {
     if (_state != CurvePlayerState::RUNNING) {
         return;
     }
-
+    _timeLeftOverall = _endTime - _system->getTsNow();
     if (_system->getTsNow() >= _nextStep) {
         if (_currentSegmentIndex < _curve->size() - 1) {
             ++_currentSegmentIndex;
