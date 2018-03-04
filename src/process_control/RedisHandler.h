@@ -2,6 +2,8 @@
 
 #include <cpp_redis/cpp_redis>
 
+#include "ProcessVariableStore.h"
+
 class RedisHandler {
 public:
     RedisHandler() {
