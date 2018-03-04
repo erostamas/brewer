@@ -14,4 +14,6 @@ add_executable(brewer
 target_link_libraries(brewer
     brewer_library
     boost_program_options
+    cpp_redis
+    tacopie
 )

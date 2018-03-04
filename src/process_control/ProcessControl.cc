@@ -27,7 +27,6 @@ ProcessControl::ProcessControl(SystemPtr system)
     , _timeToNextSegment("time_to_next_segment", Accessibility::READWRITE)
     , _timeLeftOverall("time_left_overall", Accessibility::READWRITE)
     , _currentCurve("current_curve", Accessibility::READWRITE)
-    , _xmlSerializer("/var/www/html/data.xml")
     , _commandAdapter(new StringCommandAdapter()) {
     _mode = MODE::MANUAL;
 }
@@ -68,11 +67,7 @@ void ProcessControl::run() {
         }
 
         calculatePIDOutput();
-        _xmlSerializer.serialize();
-        //std::system("clear");
-        //std::stringstream ss;
-        //_xmlSerializer.serialize(ss);
-        //std::cout << ss.str() << std::endl;
+        _redisHandler.store();
     }
 }
 

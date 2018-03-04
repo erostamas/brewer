@@ -3,10 +3,10 @@
 #include <memory>
 
 #include "ProcessVariable.h"
-#include "XmlSerializer.h"
 #include "ICommandAdapter.h"
 #include "System.h"
 #include "CurvePlayer.h"
+#include "RedisHandler.h"
 
 class SetpointCommand;
 class DeltaSetpointCommand;
@@ -48,8 +48,8 @@ private:
     std::vector<float> _recordedSetpoint;
     time_t _recordingStartTime;
     bool _recording;
-    XmlSerializer _xmlSerializer;
     std::unique_ptr<ICommandAdapter> _commandAdapter;
     CurvePlayer _curvePlayer;
+    RedisHandler _redisHandler;
     
 };
