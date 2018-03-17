@@ -19,7 +19,11 @@ void CurvePlayer::playCurve(CurvePtr curve) {
 }
 
 void CurvePlayer::step() {
-    if (_state != CurvePlayerState::RUNNING) {
+    if (_state == CurvePlayerState::PAUSED) {
+        _endTime = _system->getTsNow() + _timeLeftOverall;
+        _nextStep = _system->getTsNow() + _timeToNextSegment;
+        return;
+    } else if (_state != CurvePlayerState::RUNNING) {
         return;
     }
     _timeLeftOverall = _endTime - _system->getTsNow();
@@ -48,6 +52,18 @@ void CurvePlayer::stop() {
         _currentSegment = nullptr;
         _state = CurvePlayerState::IDLE;
         reset();
+    }
+}
+
+void CurvePlayer::pause() {
+    if (_state == CurvePlayerState::RUNNING) {
+        _state = CurvePlayerState::PAUSED;
+    }
+}
+
+void CurvePlayer::resume() {
+    if (_state == CurvePlayerState::PAUSED) {
+        _state = CurvePlayerState::RUNNING;
     }
 }
 

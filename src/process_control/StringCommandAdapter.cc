@@ -4,6 +4,8 @@
 #include "DeltaSetpointCommand.h"
 #include "ShutdownCommand.h"
 #include "PlayCurveCommand.h"
+#include "PauseCurveCommand.h"
+#include "ResumeCurveCommand.h"
 #include "Logging.h"
 #include "Utils.h"
 
@@ -39,6 +41,10 @@ std::vector<std::unique_ptr<ICommand>> StringCommandAdapter::getCommands() const
                 } catch (std::exception e) {
                     LOG_ERROR << "[StringCommandAdapter] Failed to parse playcurve command - " << e.what();
                 }
+            } else if (commandString == "pause"){
+                ret.emplace_back(new PauseCurveCommand());
+            } else if (commandString == "resume"){
+                ret.emplace_back(new ResumeCurveCommand());
             }
     }
     return ret;

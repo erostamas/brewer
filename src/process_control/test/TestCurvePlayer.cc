@@ -17,6 +17,24 @@ TEST(TestCurvePlayer, test_curve_1) {
     EXPECT_EQ(curvePlayer.getState(), CurvePlayerState::RUNNING);
     EXPECT_EQ(curvePlayer.getCurrentSetpoint(), 12.3);
 
+    curvePlayer.pause();
+    EXPECT_EQ(curvePlayer.getState(), CurvePlayerState::PAUSED);
+    EXPECT_EQ(curvePlayer.getCurrentSetpoint(), 12.3);
+    curvePlayer.step();
+    EXPECT_EQ(curvePlayer.getCurrentSetpoint(), 12.3);
+    system->sleep(500);
+    curvePlayer.step();
+    EXPECT_EQ(curvePlayer.getCurrentSetpoint(), 12.3);
+    system->sleep(1000);
+    curvePlayer.step();
+    EXPECT_EQ(curvePlayer.getCurrentSetpoint(), 12.3);
+    system->sleep(2000);
+    curvePlayer.step();
+    EXPECT_EQ(curvePlayer.getCurrentSetpoint(), 12.3);
+    curvePlayer.resume();
+    EXPECT_EQ(curvePlayer.getState(), CurvePlayerState::RUNNING);
+    EXPECT_EQ(curvePlayer.getCurrentSetpoint(), 12.3);
+
     system->sleep(50);
     curvePlayer.step();
     EXPECT_EQ(curvePlayer.getState(), CurvePlayerState::RUNNING);

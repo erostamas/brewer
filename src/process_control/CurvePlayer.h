@@ -8,6 +8,7 @@
 enum class CurvePlayerState : uint8_t {
     IDLE = 0
   , RUNNING = 1
+  , PAUSED = 2
 };
 
 class CurvePlayer {
@@ -22,6 +23,8 @@ public:
     void playCurve(CurvePtr curve);
     void step();
     void stop();
+    void pause();
+    void resume();
     void reset();
 
 private:

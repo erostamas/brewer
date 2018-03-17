@@ -14,6 +14,8 @@ target_link_libraries(brewer_library
     brewer_common
     udp_communication
     wiringPi
+    cpp_redis
+    tacopie
 )
 
 add_subdirectory(test)

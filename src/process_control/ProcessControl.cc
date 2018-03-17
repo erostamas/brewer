@@ -103,18 +103,6 @@ void ProcessControl::readTemperature() {
     _currentTemperature = ((_resistance.get() / 100) - 1) / 0.00385;
 }
 
-void ProcessControl::playCurve(std::string name) {
-    /* CurvePtr curve = _curveStore.getCurve(name);
-    if (curve->size()) {
-        _currentCurve = name;
-        _currentSegment = curve->at(0);
-        _setpoint = _currentSegment->getSetpoint();
-        std::cout << "setpoint set to: " << _setpoint << std::endl;
-        _mode = MODE::AUTO;
-        startRecording();
-    } */
-}
-
 void ProcessControl::processCommands() {
     LOG_DEBUG << "Processing commands\n";
     for (const auto& command: _commandAdapter->getCommands()) {

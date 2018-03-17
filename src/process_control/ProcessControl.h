@@ -19,7 +19,6 @@ public:
 	void setSimulationMode(bool simulationMode) { _simulationMode = simulationMode; }
 
 	void run();
-    void playCurve(std::string name);
     void stopCurve();
     void processCommands();
     void startRecording();
@@ -34,6 +33,8 @@ private:
     friend class SetpointCommand;
     friend class DeltaSetpointCommand;
     friend class PlayCurveCommand;
+    friend class PauseCurveCommand;
+    friend class ResumeCurveCommand;
     SystemPtr _system;
     ProcessVariable<TYPE::DOUBLE> _currentTemperature;
     ProcessVariable<TYPE::DOUBLE> _resistance;
