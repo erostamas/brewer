@@ -20,7 +20,8 @@ public:
               , std::string message);
     void startReceiveThread();
     void receiveThread();
-    std::list<const char*> getMessages();   
+    std::list<const char*> getMessages();
+
 private:
     unsigned _listenPort = 0;
     std::thread _receiveThread;

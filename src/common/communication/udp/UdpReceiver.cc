@@ -3,6 +3,7 @@
 
 #include "UdpReceiver.h"
 #include "Logging.h"
+#include "UdpSender.h"
 
 UdpReceiver::UdpReceiver(boost::asio::io_service& io_service, unsigned listenPort)
     : _socket(io_service, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), listenPort)) {
@@ -31,8 +32,14 @@ void UdpReceiver::handleReceive(const boost::system::error_code& error
             char* msg = new char[bytes_transferred + 1];
             strncpy(msg, _recvBuffer.data(), bytes_transferred);
             msg[bytes_transferred] = '\0';
-            _messages.push_back(msg);
             LOG_DEBUG << "[UdpReceiver] Received message: " << msg;
+            if (strcmp(msg, "where are you brewer?") == 0) {
+                handleDiscoveryMessage();
+            } else {
+                _messageContainerMutex.lock();
+                _messages.push_back(msg);
+                _messageContainerMutex.unlock();
+            }
         }
         startReceive();
 }
@@ -45,5 +52,8 @@ std::list<const char*> UdpReceiver::getMessages() {
     return tmp;
 }
 
-
-
+void UdpReceiver::handleDiscoveryMessage() {
+    UdpSender sender(_remoteEndpoint);
+    std::string msg = "right here!";
+    sender.send(msg);
+}

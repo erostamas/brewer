@@ -6,3 +6,5 @@ add_library(udp_communication STATIC
 target_link_libraries(udp_communication
     ${BOOST_LIBS}
 )
+
+add_subdirectory(test)

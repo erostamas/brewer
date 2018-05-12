@@ -1,14 +1,16 @@
 #include <iostream>
 #include <unistd.h>
 
-#include "UdpInterface.h"
+#include "UdpSender.h"
 #include "Logging.h"
 
 int main() {
     init_logging();
-    UdpInterface udp(50001);
-    std::string msg;
+    std::string msg = "hellobello";
     while (true) {
         sleep(1);
+        UdpSender sender("172.24.1.133", 50002);
+        std::string msg = "response LULU";
+        sender.send(msg);
     }
 }

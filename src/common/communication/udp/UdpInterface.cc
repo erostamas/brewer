@@ -22,8 +22,8 @@ void UdpInterface::sendTo(const std::string& ipAddress
 }
 
 void UdpInterface::sendTo(const std::string& ipAddress
-          , unsigned port
-          , std::string message) {
+                        , unsigned port
+                        , std::string message) {
     sendTo(ipAddress, port, message.c_str(), message.size());
 }
 
