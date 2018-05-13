@@ -1,0 +1,287 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+  <title>Brewer</title>
+  <meta name="description" content="website description" />
+  <meta name="keywords" content="website keywords, website keywords" />
+  <meta http-equiv="content-type" content="text/html; charset=windows-1252" />
+  <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Tangerine&amp;v1" />
+  <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Yanone+Kaffeesatz" />
+  <link rel="stylesheet" type="text/css" href="style/style.css" />
+</head>
+
+<script src="Moments.js" type="text/javascript"></script>
+<script src="Chart.js" type="text/javascript"></script>
+<script src="raphael-2.1.4.min.js"></script>
+<script src="justgage.js"></script>
+
+<body>
+  <div id="main">
+    <div id="header">
+      <div id="logo">
+        <h1>Brewer</h1>
+        <div class="slogan">Ülj bele Csu!</div>
+      </div>
+      <div id="menubar">
+        <ul id="menu">
+          <!-- put class="current" in the li tag for the selected page - to highlight which page you're on -->
+          <li class="current"><a href="index.html">Home</a></li>
+          <li><a href="historical_data.php">Historical data</a></li>
+        </ul>
+      </div>
+    </div>
+    <div id="site_content">
+      <div id="content">
+      <table style="width:100%">
+          <tr>
+            <td width="12.5%" align="left">
+                <div class="display_header">Temperature</div>
+            </td>
+            <td width="12.5%" align="left">
+                <div class="display_header">Setpoint</div>
+            </td>
+            <td width="12.5%" align="left">
+                <div class="display_header">Mode</div>
+            </td>
+            <td width="12.5%" align="left">
+                <div class="display_header">Current curve</div>
+            </td>
+            <td width="12.5%" align="left">
+                <div class="display_header">Left from segment</div>
+            </td>
+            <td width="12.5%" align="left">
+                <div class="display_header">Time left overall</div>
+            </td>
+          </tr>
+          <tr>
+            <td width="12.5%" align="left">
+                <div id="temperature" class="display_value"></div>
+            </td>
+            <td width="12.5%" align="left">
+                <div id="setpoint" class="display_value"></div>
+            </td>
+            <td width="12.5%" align="left">
+                <div id="mode" class="display_value"></div>
+            </td>
+            <td width="12.5%" align="left">
+                <div id="current_curve" class="display_value"></div>
+            </td>
+            <td width="12.5%" align="left">
+                <div id="time_to_next_segment" class="display_value"></div>
+            </td>
+            <td width="12.5%" align="left">
+                <div id="time_left_overall" class="display_value"></div>
+            </td>
+          </tr>
+        </table>
+      <table style="width:100%">
+          <tr>
+            <td width="50%" align="center"><div id="temp_gauge" style="width:300px; height:240px"></div></td>
+            <td width="50%" align="center"><div id="setpoint_gauge" style="width:300px; height:240px"></div></td>
+          </tr>
+      </table>
+      <table style="width:100%">
+          <tr>
+            <td width="100%"><canvas id="chart" width="600"></canvas></td>
+          </tr>
+      </table>
+      </div>
+    </div>
+    <div id="footer">
+      <p>Copyright &copy; simplestyle_8 | <a href="http://validator.w3.org/check?uri=referer">HTML5</a> | <a href="http://jigsaw.w3.org/css-validator/check/referer">CSS</a> | <a href="http://www.html5webtemplates.co.uk">design from HTML5webtemplates.co.uk</a></p>
+    </div>
+  </div>
+</body>
+</html>
+
+<script>
+function getCurveData() {
+    var current_curve = document.getElementById("current_curve").textContent;
+    if (current_curve == "") {
+        return;
+    }
+    var xhttp = new XMLHttpRequest();
+    xhttp.open("GET", "curves.txt", true);
+
+xhttp.onload = function () {
+    if (xhttp.readyState == xhttp.DONE && xhttp.status == 200) {
+        var current_curve = document.getElementById("current_curve").textContent;
+        alert("ok");
+        alert(current_curve);
+        var setpoints = [];
+        var seconds = [];
+        seconds.push(0);
+        var lines = xhttp.responseText.split("\n");
+        for (var curve in lines) {
+            var curve_name = lines[curve].split(" ")[0];
+            if (curve_name == current_curve) {
+                alert("found");
+                segments = lines[curve].split(" ")[1].split(";");
+                for (var segment in segments) {
+                    var duration = segments[segment].split(":")[1];
+                    var setpoint = segments[segment].split(":")[0]
+                    for (var i = 1; i <= duration; i++) {
+                        setpoints.push(setpoint);
+                        seconds.push(seconds[seconds.length - 1] + 1);
+                    }
+                }
+            }
+        }
+        var ctx = document.getElementById("chart").getContext('2d');
+        var myChart = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: seconds,
+                            datasets: [{
+                                label: "Setpoint",
+                                backgroundColor: 'rgb(100, 100, 100)',
+                                borderColor: 'rgb(255, 255, 0)',
+                                data: setpoints,
+                                fill: false,
+                                borderWidth: 1,
+                                pointStyle: 'line'
+                            }]
+                        },
+                        options: {
+                            responsive: false,
+                            scales: {
+                                yAxes: [{
+                                    gridLines: {
+                                        color: 'white',
+                                        lineWidth: 1
+                                    },
+                                    ticks: {
+                                        beginAtZero:true,
+                                        fontColor: "white"
+                                    }
+                                }],
+                                xAxes: [{
+                                    type: "time",
+                                    time: {
+                                        displayFormats: {
+                                        'millisecond': 'hh:mm',
+                                        'second': 'hh:mm',
+                                        'minute': 'hh:mm',
+                                        'hour': 'hh:mm',
+                                        'day': 'hh:mm',
+                                        'week': 'hh:mm',
+                                        'month': 'hh:mm',
+                                        'quarter': 'hh:mm',
+                                        'year': 'hh:mm',
+                                        }
+                                    },
+                                    display: true,
+                                    scaleLabel: {
+                                        display: true,
+                                        labelString: 'Date'
+                                    },
+                                    ticks: {
+                                        fontColor: 'white'
+                                    }
+                                }]
+                            }
+                        }
+        });
+    }
+}
+xhttp.send();
+}
+
+
+var tempGauge = new JustGage({
+  id: "temp_gauge",
+  value: 67.6,
+  min: 0,
+  max: 100,
+  title: "Current Temperature",
+  decimals: 1,
+  valueFontColor: 'white',
+  label: '°C'
+});
+
+var setpointGauge = new JustGage({
+  id: "setpoint_gauge",
+  value: 67.6,
+  min: 0,
+  max: 100,
+  title: "Setpoint",
+  decimals: 1,
+  valueFontColor: 'white',
+  label: '°C'
+});
+
+function refresh() {
+var xhttp = new XMLHttpRequest();
+xhttp.open("GET", "process_data.php", true);
+xhttp.responseType = 'document';
+xhttp.overrideMimeType('text/xml');
+
+xhttp.onload = function () {
+    if (xhttp.readyState == xhttp.DONE && xhttp.status == 200) {
+        xmlDoc = xhttp.responseXML;
+        tempGauge.refresh(xmlDoc.getElementsByTagName("temp")[0].childNodes[0].nodeValue);
+        document.getElementById("temperature").innerHTML = xmlDoc.getElementsByTagName("temp")[0].childNodes[0].nodeValue + '°C';
+        setpointGauge.refresh(xmlDoc.getElementsByTagName("setpoint")[0].childNodes[0].nodeValue);
+        document.getElementById("setpoint").innerHTML = xmlDoc.getElementsByTagName("setpoint")[0].childNodes[0].nodeValue + '°C';
+        document.getElementById("mode").innerHTML = xmlDoc.getElementsByTagName("mode")[0].childNodes[0].nodeValue;
+        var current_curve = document.getElementById("current_curve").innerHTML.textContent;
+        var new_current_curve = xmlDoc.getElementsByTagName("current_curve")[0].childNodes[0].nodeValue;
+        if (document.getElementById("current_curve").textContent != new_current_curve) {
+            document.getElementById("current_curve").textContent = new_current_curve;
+            if (new_current_curve != "") {
+                getCurveData();
+            }
+        }
+        if (xmlDoc.getElementsByTagName("mode")[0].childNodes[0].nodeValue == "AUTO") {
+            var seconds = xmlDoc.getElementsByTagName("time_to_next_segment")[0].childNodes[0].nodeValue;
+            var hours = Math.floor(seconds / 3600);
+            seconds = seconds - hours * 3600;
+            var minutes = Math.floor(seconds / 60);
+            seconds = seconds - minutes * 60;
+            document.getElementById("time_to_next_segment").innerHTML = hours + ":" + minutes + ":" + seconds;
+        } else {
+            document.getElementById("time_to_next_segment").innerHTML = "";
+        }
+        if (xmlDoc.getElementsByTagName("mode")[0].childNodes[0].nodeValue == "AUTO") {
+            var seconds = xmlDoc.getElementsByTagName("time_left_overall")[0].childNodes[0].nodeValue;
+            var hours = Math.floor(seconds / 3600);
+            seconds = seconds - hours * 3600;
+            var minutes = Math.floor(seconds / 60);
+            seconds = seconds - minutes * 60;
+            document.getElementById("time_left_overall").innerHTML = hours + ":" + minutes + ":" + seconds;
+        } else {
+            document.getElementById("time_left_overall").innerHTML = "";
+        }
+    }
+}
+xhttp.send();
+
+setTimeout(refresh, 1000);
+}
+
+refresh();
+getCurveData();
+
+function openPage(evt, PageName) {
+    // Declare all variables
+    var i, tabcontent, tablinks;
+
+    // Get all elements with class="tabcontent" and hide them
+    tabcontent = document.getElementsByClassName("tabcontent");
+    for (i = 0; i < tabcontent.length; i++) {
+        tabcontent[i].style.display = "none";
+    }
+
+    // Get all elements with class="tablinks" and remove the class "active"
+    tablinks = document.getElementsByClassName("tablinks");
+    for (i = 0; i < tablinks.length; i++) {
+        tablinks[i].className = tablinks[i].className.replace(" active", "");
+    }
+
+    // Show the current tab, and add an "active" class to the button that opened the tab
+    document.getElementById(PageName).style.display = "block";
+    evt.currentTarget.className += " active";
+}
+
+</script>

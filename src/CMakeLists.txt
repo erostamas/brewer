@@ -15,3 +15,8 @@ target_link_libraries(brewer
     brewer_library
     boost_program_options
 )
+
+INSTALL(TARGETS brewer
+        DESTINATION /opt/erostamas/brewer
+        PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ
+                    GROUP_EXECUTE GROUP_WRITE GROUP_READ)

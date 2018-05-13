@@ -1,8 +1,17 @@
 cmake_minimum_required(VERSION 3.0)
+PROJECT(brewer)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR})
 set(Boost_USE_STATIC_LIBS ON)
 set(BOOST_LIBS boost_log boost_system boost_thread)
 enable_testing()
+
+SET(CPACK_GENERATOR "DEB")
+SET(CPACK_DEBIAN_PACKAGE_MAINTAINER "Tamas Eros") #required
+
+INCLUDE(CPack)
+
+INSTALL(DIRECTORY webserver/webpages
+        DESTINATION /opt/erostamas/brewer/webpages)
 
 # compiler and linker flags
 if ((NOT CMAKE_CXX_FLAGS) OR (CMAKE_CXX_FLAGS MATCHES "^[ \t]*$"))
