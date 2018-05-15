@@ -15,6 +15,10 @@ void signalHandler( int signum ) {
 }
 
 int main(int argc, char** argv) {
+    init_logging();
+    signal(SIGINT, signalHandler);
+    signal(SIGTERM, signalHandler);
+
     namespace po = boost::program_options;
     po::options_description desc("Options");
     desc.add_options()
@@ -28,13 +32,9 @@ int main(int argc, char** argv) {
     }
     catch(po::error& e)
     {
-      std::cerr << "ERROR: " << e.what() << std::endl << std::endl;
-      std::cerr << desc << std::endl;
+      LOG_ERROR << "Exception during program option parsing" << e.what() << " - " << desc << std::endl;
       return 1;
     }
-    init_logging();
-    signal(SIGINT, signalHandler);
-    signal(SIGTERM, signalHandler);
 
     ProcessControl processcontrol;
     if ( vm.count("simulation")  )
