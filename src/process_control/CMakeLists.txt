@@ -5,7 +5,6 @@ add_library(brewer_library STATIC
     CurvePlayer.cc
     ProcessVariableBase.cc
     ProcessVariableStore.cc
-    XmlSerializer.cc
     StringCommandAdapter.cc
 )
 
