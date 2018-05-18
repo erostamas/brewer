@@ -8,3 +8,5 @@ add_library(brewer_common STATIC
 target_link_libraries(brewer_common
     ${BOOST_LIBS}
 )
+
+add_subdirectory(test)

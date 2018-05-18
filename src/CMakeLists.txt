@@ -5,7 +5,6 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/process_control/commands)
 
 
 add_subdirectory(common)
-add_subdirectory(test)
 add_subdirectory(process_control)
 
 add_executable(brewer

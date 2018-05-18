@@ -11,14 +11,6 @@ Config::Config(std::istringstream& config) {
     pt::read_json(config, _root);
 }
 
-int Config::getInteger(const std::string& path) {
-    return _root.get<int>(path);
-}
-
-std::string Config::getString(const std::string& path) {
-    return _root.get<std::string>(path);
-}
-
 PropertyTree& Config::getCompound(const std::string& path) {
     return _root.get_child(path);
 }
